@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { getLegalPageById, getLegalPageByType, updateLegalPage, MOCK_LEGAL_PAGES, type LegalPage } from "../legal-data";
+import { getLegalPageById, getLegalPageByType, updateLegalPage, MOCK_LEGAL_PAGES } from "../legal-data";
 
 // GET /api/legal/:type - Get legal page by type (terms or privacy)
 const getLegalPageByTypeHandler = http.get("/api/legal/:type", ({ params }) => {

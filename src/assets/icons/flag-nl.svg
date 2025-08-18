@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="component-iconify MuiBox-root css-1virv8 iconify iconify--flagpack" width="1.34em" height="1em" viewBox="0 0 32 24">
+  <defs>
+    <path id="iconifyReact3157" fill="#fff" d="M0 0h32v24H0z"></path>
+  </defs>
+  <mask id="iconifyReact3158" width="32" height="24" x="0" y="0" maskUnits="userSpaceOnUse">
+    <use href="#iconifyReact3157"></use>
+  </mask>
+  <g fill="none" mask="url(#iconifyReact3158)">
+    <rect width="32" height="8" y="0" fill="#AE1C28"></rect>
+    <rect width="32" height="8" y="8" fill="#FFFFFF"></rect>
+    <rect width="32" height="8" y="16" fill="#21468B"></rect>
+  </g>
+</svg>

@@ -4,7 +4,6 @@ import { useRouter } from "@/routes/hooks";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/ui/command";
-import { ScrollArea } from "@/ui/scroll-area";
 import { Text } from "@/ui/typography";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useBoolean } from "react-use";

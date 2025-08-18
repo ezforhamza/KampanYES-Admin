@@ -4,7 +4,8 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 import { LocalEnum, StorageEnum } from "#/enum";
 import en_US from "./lang/en_US";
-import zh_CN from "./lang/zh_CN";
+import nl_NL from "./lang/nl_NL";
+import de_DE from "./lang/de_DE";
 
 const defaultLng = getStringItem(StorageEnum.I18N) || (LocalEnum.en_US as string);
 
@@ -28,7 +29,8 @@ i18n
 		},
 		resources: {
 			en_US: { translation: en_US },
-			zh_CN: { translation: zh_CN },
+			nl_NL: { translation: nl_NL },
+			de_DE: { translation: de_DE },
 		},
 	});
 

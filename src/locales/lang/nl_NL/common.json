@@ -1,0 +1,22 @@
+{
+	"common": {
+		"okText": "OK",
+		"closeText": "Sluiten",
+		"cancelText": "Annuleren",
+		"loadingText": "Laden...",
+		"saveText": "Opslaan",
+		"delText": "Verwijderen",
+		"resetText": "Resetten",
+		"searchText": "Zoeken",
+		"queryText": "Zoeken",
+
+		"inputText": "Voer in",
+		"chooseText": "Kies",
+
+		"redo": "Vernieuwen",
+		"back": "Terug",
+
+		"light": "Licht",
+		"dark": "Donker"
+	}
+}

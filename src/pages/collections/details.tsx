@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "@/routes/hooks";
 import { Button } from "@/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent, CardHeader } from "@/ui/card";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import { MOCK_FLYERS, isFlyerActive } from "@/_mock/collection-data";
