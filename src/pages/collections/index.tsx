@@ -2,9 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "@/routes/hooks";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import type { Collection, CollectionFilters } from "@/types/collection";
+import { loadCollectionThumbnails } from "@/utils/thumbnail-helpers";
+import { MOCK_STORES } from "@/_mock/store-data";
 
 /**
  * Collections Management Page Component
@@ -12,10 +15,22 @@ import type { Collection, CollectionFilters } from "@/types/collection";
  */
 export default function Collections() {
 	const [collections, setCollections] = useState<Collection[]>([]);
-	const [filters] = useState<CollectionFilters>({});
+	const [filters, setFilters] = useState<CollectionFilters>({});
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingCollections, setIsLoadingCollections] = useState(true);
+	const [thumbnailImages, setThumbnailImages] = useState<Record<string, string>>({});
 	const { push } = useRouter();
+
+	// Load thumbnail images for collections
+	const loadThumbnails = useCallback(async (collectionsData: Collection[]) => {
+		try {
+			const thumbnails = await loadCollectionThumbnails(collectionsData);
+			setThumbnailImages(thumbnails);
+		} catch (error) {
+			console.error("Failed to load collection thumbnails:", error);
+			toast.error("Failed to load collection thumbnails");
+		}
+	}, []);
 
 	// Fetch collections from API
 	const fetchCollections = useCallback(async () => {
@@ -36,6 +51,8 @@ export default function Collections() {
 
 			if (data.status === 0) {
 				setCollections(data.data.list);
+				// Load thumbnails after collections are set
+				loadThumbnails(data.data.list);
 			} else {
 				toast.error("Failed to load collections");
 			}
@@ -45,17 +62,19 @@ export default function Collections() {
 		} finally {
 			setIsLoadingCollections(false);
 		}
-	}, [filters]);
+	}, [filters, loadThumbnails]);
 
 	// Load collections when component mounts or filters change
 	useEffect(() => {
 		fetchCollections();
 	}, [fetchCollections]);
 
-	// Get thumbnail image for collection (using placeholder for now)
-	const getThumbnailImage = (): string => {
-		// For now, return a placeholder. In a real app, this would come from the API
-		return "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center";
+	// Handle store filter change
+	const handleStoreFilterChange = (storeId: string) => {
+		setFilters(prev => ({
+			...prev,
+			storeId: storeId === "all" ? undefined : storeId
+		}));
 	};
 
 	// Filter collections based on current filters
@@ -124,10 +143,32 @@ export default function Collections() {
 					<h1 className="text-2xl font-bold text-text-primary">Collections</h1>
 					<p className="text-text-secondary mt-1">Manage your promotional collections and flyers</p>
 				</div>
-				<Button onClick={() => push("/collections/create")}>
-					<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
-					Create Collection
-				</Button>
+				<div className="flex items-center gap-3">
+					{/* Store Filter */}
+					<div className="flex items-center gap-2">
+						<span className="text-sm text-text-secondary">Store:</span>
+						<Select 
+							value={filters.storeId || "all"} 
+							onValueChange={handleStoreFilterChange}
+						>
+							<SelectTrigger className="w-[180px]">
+								<SelectValue placeholder="All stores" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All Stores</SelectItem>
+								{MOCK_STORES.map((store) => (
+									<SelectItem key={store.id} value={store.id}>
+										{store.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<Button onClick={() => push("/collections/create")}>
+						<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
+						Create Collection
+					</Button>
+				</div>
 			</div>
 
 			{/* Collections Grid */}
@@ -156,7 +197,7 @@ export default function Collections() {
 					) : (
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 							{filteredCollections.map((collection) => {
-								const thumbnailImage = getThumbnailImage();
+								const thumbnailImage = thumbnailImages[collection.id] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center";
 
 								return (
 									<div

@@ -6,9 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
-import { useTheme } from "@/theme/hooks/use-theme";
 import type { User } from "@/types/user";
-import { UserStatus, USER_STATUS_LABELS, USER_LANGUAGE_LABELS } from "@/types/user";
+import { UserStatus, USER_STATUS_LABELS } from "@/types/user";
 import { UserMapDisplay } from "./components/user-map-display";
 import { SuspendUserDialog } from "./components/suspend-user-dialog";
 import { LikedFlyersModal } from "./components/liked-flyers-modal";
@@ -24,7 +23,6 @@ import type { Flyer } from "@/types/flyer";
 export default function UserDetails() {
 	const { id } = useParams();
 	const { push, back } = useRouter();
-	const { mode } = useTheme();
 
 	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -48,8 +46,8 @@ export default function UserDetails() {
 				setUser(userData);
 
 				// Populate liked stores and flyers data
-				const userLikedStores = getStoresByIds(userData.likedStores);
-				const userLikedFlyers = getFlyersByIds(userData.likedFlyers);
+				const userLikedStores = getStoresByIds(userData.likedStores) as Store[];
+				const userLikedFlyers = getFlyersByIds(userData.likedFlyers) as Flyer[];
 				setLikedStores(userLikedStores);
 				setLikedFlyers(userLikedFlyers);
 			} else {
@@ -75,7 +73,7 @@ export default function UserDetails() {
 
 			if (data.status === 0) {
 				setUser((prev) => (prev ? { ...prev, status: UserStatus.SUSPENDED } : null));
-				toast.success(`${user.name} has been suspended`);
+				toast.success(`${user.firstName} ${user.lastName} has been suspended`);
 			} else {
 				toast.error(data.message || "Failed to suspend user");
 			}
@@ -99,7 +97,7 @@ export default function UserDetails() {
 
 			if (data.status === 0) {
 				setUser((prev) => (prev ? { ...prev, status: UserStatus.ACTIVE } : null));
-				toast.success(`${user.name} has been activated`);
+				toast.success(`${user.firstName} ${user.lastName} has been activated`);
 			} else {
 				toast.error(data.message || "Failed to activate user");
 			}
@@ -183,12 +181,12 @@ export default function UserDetails() {
 					<div className="flex items-center gap-3">
 						<img
 							src={user.profileImage}
-							alt={user.name}
+							alt={`${user.firstName} ${user.lastName}`}
 							className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
 						/>
 						<div>
 							<div className="flex items-center gap-2">
-								<h1 className="text-2xl font-bold text-text-primary">{user.name}</h1>
+								<h1 className="text-2xl font-bold text-text-primary">{user.firstName} {user.lastName}</h1>
 								<Badge variant={getStatusBadgeVariant(user.status)}>{USER_STATUS_LABELS[user.status]}</Badge>
 							</div>
 							<p className="text-text-secondary">{user.email}</p>
@@ -230,15 +228,18 @@ export default function UserDetails() {
 					<CardContent className="space-y-6">
 						<div className="grid grid-cols-2 gap-4">
 							<div>
-								<label className="text-sm font-medium text-text-secondary">Email</label>
-								<p className="text-text-primary font-medium">{user.email}</p>
+								<label className="text-sm font-medium text-text-secondary">First Name</label>
+								<p className="text-text-primary font-medium">{user.firstName}</p>
 							</div>
 							<div>
-								<label className="text-sm font-medium text-text-secondary">Language</label>
-								<p className="text-text-primary font-medium">
-									{USER_LANGUAGE_LABELS[user.language]} ({user.language.toUpperCase()})
-								</p>
+								<label className="text-sm font-medium text-text-secondary">Last Name</label>
+								<p className="text-text-primary font-medium">{user.lastName}</p>
 							</div>
+						</div>
+
+						<div>
+							<label className="text-sm font-medium text-text-secondary">Email</label>
+							<p className="text-text-primary font-medium">{user.email}</p>
 						</div>
 
 						<div>
@@ -246,7 +247,7 @@ export default function UserDetails() {
 							<div className="mt-2">
 								<img
 									src={user.profileImage}
-									alt={user.name}
+									alt={`${user.firstName} ${user.lastName}`}
 									className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
 								/>
 							</div>
@@ -429,7 +430,7 @@ export default function UserDetails() {
 										<UserMapDisplay
 											latitude={user.location.coordinates.lat}
 											longitude={user.location.coordinates.lng}
-											userName={user.name}
+											userName={`${user.firstName} ${user.lastName}`}
 											address={user.location.address}
 											height={250}
 											showCard={false}
@@ -457,7 +458,7 @@ export default function UserDetails() {
 				flyers={likedFlyers}
 				isOpen={flyersModalOpen}
 				onClose={() => setFlyersModalOpen(false)}
-				userName={user?.name || "User"}
+				userName={user ? `${user.firstName} ${user.lastName}` : "User"}
 			/>
 
 			{/* Liked Stores Modal */}
@@ -465,7 +466,7 @@ export default function UserDetails() {
 				stores={likedStores}
 				isOpen={storesModalOpen}
 				onClose={() => setStoresModalOpen(false)}
-				userName={user?.name || "User"}
+				userName={user ? `${user.firstName} ${user.lastName}` : "User"}
 			/>
 		</div>
 	);

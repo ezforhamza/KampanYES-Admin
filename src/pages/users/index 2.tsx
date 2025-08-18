@@ -5,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
-import { useTheme } from "@/theme/hooks/use-theme";
 import { m } from "motion/react";
 import { varFade } from "@/components/animate/variants/fade";
 import MotionViewport from "@/components/animate/motion-viewport";
 import type { User, UserFilters } from "@/types/user";
-import { UserStatus, USER_STATUS_LABELS, USER_LANGUAGE_LABELS } from "@/types/user";
+import { UserStatus, USER_STATUS_LABELS } from "@/types/user";
 import { UserFiltersComponent } from "./components/user-filters";
 import { SuspendUserDialog } from "./components/suspend-user-dialog";
 
@@ -28,7 +27,6 @@ export default function Users() {
 	const [totalUsers, setTotalUsers] = useState(0);
 	const [suspendDialogUser, setSuspendDialogUser] = useState<User | null>(null);
 	const { push } = useRouter();
-	const { mode } = useTheme();
 	const observerRef = useRef<IntersectionObserver | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -47,7 +45,6 @@ export default function Users() {
 
 			if (filters.search) params.set("search", filters.search);
 			if (filters.status !== undefined) params.set("status", filters.status.toString());
-			if (filters.language) params.set("language", filters.language);
 			if (filters.city) params.set("city", filters.city);
 
 			const response = await fetch(`/api/app-users?${params.toString()}`);
@@ -85,7 +82,7 @@ export default function Users() {
 
 			if (data.status === 0) {
 				setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: UserStatus.SUSPENDED } : u)));
-				toast.success(`${user.name} has been suspended`);
+				toast.success(`${user.firstName} ${user.lastName} has been suspended`);
 			} else {
 				toast.error(data.message || "Failed to suspend user");
 			}
@@ -107,7 +104,7 @@ export default function Users() {
 
 			if (data.status === 0) {
 				setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: UserStatus.ACTIVE } : u)));
-				toast.success(`${user.name} has been activated`);
+				toast.success(`${user.firstName} ${user.lastName} has been activated`);
 			} else {
 				toast.error(data.message || "Failed to activate user");
 			}
@@ -232,7 +229,7 @@ export default function Users() {
 										<div className="flex-shrink-0">
 											<img
 												src={user.profileImage}
-												alt={user.name}
+												alt={`${user.firstName} ${user.lastName}`}
 												className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
 											/>
 										</div>
@@ -240,13 +237,12 @@ export default function Users() {
 										{/* User Info */}
 										<div className="flex-grow">
 											<div className="flex items-center gap-2">
-												<h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</h3>
+												<h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</h3>
 												<Badge variant={getStatusBadgeVariant(user.status)}>{USER_STATUS_LABELS[user.status]}</Badge>
 											</div>
 											<p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
 											<div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
 												<span>📍 {user.location.city}</span>
-												<span>🗣️ {USER_LANGUAGE_LABELS[user.language]}</span>
 												<span>❤️ {user.totalLikedFlyers} flyers</span>
 												<span>🏪 {user.totalLikedStores} stores</span>
 											</div>

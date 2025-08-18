@@ -115,16 +115,30 @@ export default function CollectionDetails() {
 			});
 
 			try {
-				// Simulate API call
-				await new Promise((resolve) => setTimeout(resolve, 500));
-
-				// Update collection thumbnail
-				setCollection((prev) => (prev ? { ...prev, thumbnailFlyerId: flyer.id } : null));
-
-				toast.success("Thumbnail updated!", {
-					description: `${flyer.name} is now the collection thumbnail.`,
-					id: loadingToast,
+				// Make API call to update collection thumbnail
+				const response = await fetch(`/api/collections/${collection.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						thumbnailFlyerId: flyer.id,
+					}),
 				});
+
+				const result = await response.json();
+
+				if (result.status === 0) {
+					// Update collection thumbnail
+					setCollection((prev) => (prev ? { ...prev, thumbnailFlyerId: flyer.id } : null));
+
+					toast.success("Thumbnail updated!", {
+						description: `${flyer.name} is now the collection thumbnail.`,
+						id: loadingToast,
+					});
+				} else {
+					throw new Error(result.message || 'Failed to update thumbnail');
+				}
 			} catch (error) {
 				console.error("Failed to set thumbnail:", error);
 				toast.error("Failed to set thumbnail", {
@@ -182,81 +196,6 @@ export default function CollectionDetails() {
 				</div>
 			</div>
 
-			{/* Collection Info */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<div className="lg:col-span-2">
-					<Card>
-						<CardHeader>
-							<CardTitle className="text-lg flex items-center gap-2">
-								<Icon icon="solar:info-circle-bold" size={20} />
-								Collection Information
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<p className="text-sm font-medium text-text-secondary mb-1">Category</p>
-									<p className="text-text-primary">{(collection as any).categoryName || "Unknown Category"}</p>
-								</div>
-								<div>
-									<p className="text-sm font-medium text-text-secondary mb-1">Status</p>
-									<div className="flex items-center gap-2">
-										<div
-											className={`w-2 h-2 rounded-full ${collection.status === 1 ? "bg-green-500" : "bg-red-500"}`}
-										></div>
-										<span className="text-text-primary">{collection.status === 1 ? "Active" : "Inactive"}</span>
-									</div>
-								</div>
-							</div>
-
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<p className="text-sm font-medium text-text-secondary mb-1">Created</p>
-									<p className="text-text-primary">{new Date(collection.createdAt).toLocaleDateString()}</p>
-								</div>
-								<div>
-									<p className="text-sm font-medium text-text-secondary mb-1">Last Updated</p>
-									<p className="text-text-primary">{new Date(collection.updatedAt).toLocaleDateString()}</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-
-				{/* Stats */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="text-lg flex items-center gap-2">
-							<Icon icon="solar:chart-bold" size={20} />
-							Statistics
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="text-center">
-							<p className="text-3xl font-bold text-text-primary">{flyers.length}</p>
-							<p className="text-sm text-text-secondary">Total Flyers</p>
-						</div>
-						<div className="text-center">
-							<p className="text-3xl font-bold text-text-primary">
-								{flyers.length > 0
-									? Math.round(flyers.reduce((sum, f) => sum + f.discountPercentage, 0) / flyers.length)
-									: 0}
-								%
-							</p>
-							<p className="text-sm text-text-secondary">Avg. Discount</p>
-						</div>
-						<div className="text-center">
-							<p className="text-3xl font-bold text-text-primary">
-								€
-								{flyers.length > 0
-									? (flyers.reduce((sum, f) => sum + f.finalPrice, 0) / flyers.length).toFixed(2)
-									: "0.00"}
-							</p>
-							<p className="text-sm text-text-secondary">Avg. Price</p>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
 
 			{/* Flyers Grid */}
 			<Card>

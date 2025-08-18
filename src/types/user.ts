@@ -7,15 +7,6 @@ export enum UserStatus {
 	PENDING_VERIFICATION = 2,
 }
 
-/**
- * Supported languages for the app
- */
-export enum UserLanguage {
-	ENGLISH = "en",
-	DUTCH = "nl",
-	FRENCH = "fr",
-	GERMAN = "de",
-}
 
 /**
  * User location information (similar to store location)
@@ -35,10 +26,10 @@ export interface UserLocation {
 export interface User {
 	id: string;
 	email: string;
-	name: string;
+	firstName: string;
+	lastName: string;
 	profileImage: string;
 	location: UserLocation;
-	language: UserLanguage;
 	status: UserStatus;
 	likedFlyers: string[]; // Array of flyer IDs
 	likedStores: string[]; // Array of store IDs
@@ -62,9 +53,8 @@ export interface UpdateUserRequest {
  * User filters for search and filtering in admin panel
  */
 export interface UserFilters {
-	search?: string; // Search by name or email
+	search?: string; // Search by first name, last name or email
 	status?: UserStatus;
-	language?: UserLanguage;
 	city?: string;
 }
 
@@ -76,22 +66,8 @@ export interface UserStats {
 	activeUsers: number;
 	suspendedUsers: number;
 	newUsersThisMonth: number;
-	topLanguages: Array<{
-		language: UserLanguage;
-		count: number;
-		percentage: number;
-	}>;
 }
 
-/**
- * Language labels for UI display
- */
-export const USER_LANGUAGE_LABELS: Record<UserLanguage, string> = {
-	[UserLanguage.ENGLISH]: "English",
-	[UserLanguage.DUTCH]: "Nederlands",
-	[UserLanguage.FRENCH]: "Français",
-	[UserLanguage.GERMAN]: "Deutsch",
-};
 
 /**
  * User status labels for UI display

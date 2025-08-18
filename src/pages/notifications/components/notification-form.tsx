@@ -150,7 +150,9 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 	// Filter users based on search term
 	const filteredUsers = MOCK_USERS.filter(
 		(user) =>
-			user.name.toLowerCase().includes(formData.searchTerm.toLowerCase()) ||
+			user.firstName.toLowerCase().includes(formData.searchTerm.toLowerCase()) ||
+			user.lastName.toLowerCase().includes(formData.searchTerm.toLowerCase()) ||
+			`${user.firstName} ${user.lastName}`.toLowerCase().includes(formData.searchTerm.toLowerCase()) ||
 			user.email.toLowerCase().includes(formData.searchTerm.toLowerCase()),
 	);
 
@@ -276,7 +278,7 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 															/>
 															<div className="flex-1 min-w-0">
 																<Label htmlFor={`user-${user.id}`} className="text-sm font-normal cursor-pointer">
-																	<div className="font-medium text-foreground">{user.name}</div>
+																	<div className="font-medium text-foreground">{user.firstName} {user.lastName}</div>
 																	<div className="text-xs text-muted-foreground truncate">{user.email}</div>
 																</Label>
 															</div>

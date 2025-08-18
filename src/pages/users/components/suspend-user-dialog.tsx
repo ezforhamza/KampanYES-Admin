@@ -30,11 +30,11 @@ export function SuspendUserDialog({ user, isOpen, onConfirm, onCancel }: Suspend
 					<div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
 						<img
 							src={user.profileImage}
-							alt={user.name}
+							alt={`${user.firstName} ${user.lastName}`}
 							className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
 						/>
 						<div>
-							<p className="font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
+							<p className="font-semibold text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</p>
 							<p className="text-sm text-gray-600 dark:text-gray-300">{user.email}</p>
 						</div>
 					</div>

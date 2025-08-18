@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "@/routes/hooks";
 import { Button } from "@/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent } from "@/ui/card";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import { CreateCollectionForm } from "./components/create-collection-form";
@@ -81,13 +81,7 @@ export default function CreateCollection() {
 
 			{/* Create Collection Form */}
 			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg flex items-center gap-2">
-						<Icon icon="solar:folder-plus-bold" size={20} />
-						Collection Information
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<CardContent className="pt-6">
 					<CreateCollectionForm onSubmit={handleCreateCollection} onCancel={handleCancel} isLoading={isLoading} />
 				</CardContent>
 			</Card>

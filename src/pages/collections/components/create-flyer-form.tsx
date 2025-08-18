@@ -4,16 +4,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Button } from "@/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
-import { Calendar } from "@/ui/calendar";
 import { Icon } from "@/components/icon";
-import { cn } from "@/utils/index";
-import { format } from "date-fns";
 import { createFlyerSchema, type CreateFlyerFormData } from "../schemas/flyer-schema";
 import { BasicStatus } from "@/types/enum";
 import type { Flyer } from "@/types/flyer";
 import { useEffect, useMemo } from "react";
 import { Upload } from "@/components/upload/upload";
+import { DatePicker, InputNumber } from "antd";
+import dayjs from "dayjs";
 
 interface CreateFlyerFormProps {
 	onSubmit: (data: CreateFlyerFormData) => void;
@@ -90,26 +88,10 @@ export function CreateFlyerForm({
 
 	return (
 		<div className="space-y-6">
-			{/* Header */}
-			<div>
-				<h2 className="text-lg font-semibold">{editMode ? "Edit Flyer" : "Create New Flyer"}</h2>
-				<p className="text-sm text-text-secondary mt-1">
-					{editMode
-						? `Update flyer information for ${initialFlyer?.name}`
-						: "Create a new promotional flyer for this collection."}
-				</p>
-			</div>
-
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-					{/* Form Content */}
 					<div className="space-y-8">
-						{/* Basic Information Section */}
 						<div className="space-y-6">
-							<div className="border-b pb-2">
-								<h3 className="text-lg font-semibold text-text-primary">Basic Information</h3>
-								<p className="text-sm text-text-secondary">Essential details about your flyer</p>
-							</div>
 
 							{/* Flyer Image Upload */}
 							<FormField
@@ -190,83 +172,83 @@ export function CreateFlyerForm({
 							/>
 						</div>
 
-						{/* Pricing Information Section */}
 						<div className="space-y-6">
-							<div className="border-b pb-2">
-								<h3 className="text-lg font-semibold text-text-primary">Pricing Information</h3>
-								<p className="text-sm text-text-secondary">Set the original price and discount</p>
-							</div>
-
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 								{/* Original Price */}
-								<FormField
-									control={form.control}
-									name="price"
-									render={({ field }) => (
-										<FormItem className="space-y-2">
-											<FormLabel className="text-sm font-medium text-text-primary">Original Price (€) *</FormLabel>
-											<FormControl>
-												<Input
-													type="number"
-													step="0.01"
-													min="0.01"
-													placeholder="0.00"
-													className="h-10"
-													onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<div className="min-h-[1.25rem]">
-												<FormMessage />
-											</div>
-										</FormItem>
-									)}
-								/>
+								<div className="lg:col-span-1">
+									<FormField
+										control={form.control}
+										name="price"
+										render={({ field }) => (
+											<FormItem className="space-y-2">
+												<FormLabel className="text-sm font-medium text-text-primary">Original Price (€) *</FormLabel>
+												<FormControl>
+													<InputNumber
+														{...field}
+														min={0.01}
+														step={0.01}
+														precision={2}
+														placeholder="0.00"
+														className="w-full"
+														style={{ height: "40px", width: "100%" }}
+														prefix="€"
+														formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+														parser={(value) => parseFloat(value!.replace(/€\s?|(,*)/g, '')) || 0}
+													/>
+												</FormControl>
+												<div className="min-h-[1.25rem]">
+													<FormMessage />
+												</div>
+											</FormItem>
+										)}
+									/>
+								</div>
 
 								{/* Discount Percentage */}
-								<FormField
-									control={form.control}
-									name="discountPercentage"
-									render={({ field }) => (
-										<FormItem className="space-y-2">
-											<FormLabel className="text-sm font-medium text-text-primary">Discount (%)</FormLabel>
-											<FormControl>
-												<Input
-													type="number"
-													step="1"
-													min="0"
-													max="100"
-													placeholder="0"
-													className="h-10"
-													onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<div className="min-h-[1.25rem]">
-												<FormMessage />
-											</div>
-										</FormItem>
-									)}
-								/>
+								<div className="lg:col-span-1">
+									<FormField
+										control={form.control}
+										name="discountPercentage"
+										render={({ field }) => (
+											<FormItem className="space-y-2">
+												<FormLabel className="text-sm font-medium text-text-primary">Discount (%)</FormLabel>
+												<FormControl>
+													<InputNumber
+														{...field}
+														min={0}
+														max={100}
+														step={1}
+														precision={0}
+														placeholder="0"
+														className="w-full"
+														style={{ height: "40px", width: "100%" }}
+														suffix="%"
+													/>
+												</FormControl>
+												<div className="min-h-[1.25rem]">
+													<FormMessage />
+												</div>
+											</FormItem>
+										)}
+									/>
+								</div>
 
 								{/* Final Price (Calculated) */}
-								<div className="space-y-2">
-									<label className="text-sm font-medium text-text-primary">Final Price (€)</label>
-									<div className="h-10 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-input rounded-md flex items-center">
-										<span className="text-lg font-semibold text-green-600">€{finalPrice.toFixed(2)}</span>
-									</div>
-									<p className="text-xs text-muted-foreground">Automatically calculated based on price and discount</p>
+								<div className="lg:col-span-1">
+									<FormItem className="space-y-2">
+										<FormLabel className="text-sm font-medium text-text-primary">Final Price (€)</FormLabel>
+										<div className="h-10 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-input rounded-md flex items-center">
+											<span className="text-lg font-semibold text-green-600">€{finalPrice.toFixed(2)}</span>
+										</div>
+										<div className="min-h-[1.25rem]">
+											{/* Empty space to match FormMessage height */}
+										</div>
+									</FormItem>
 								</div>
 							</div>
 						</div>
 
-						{/* Date Range Section */}
 						<div className="space-y-6">
-							<div className="border-b pb-2">
-								<h3 className="text-lg font-semibold text-text-primary">Validity Period</h3>
-								<p className="text-sm text-text-secondary">Set when this flyer will be active</p>
-							</div>
-
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								{/* Start Date */}
 								<FormField
@@ -275,31 +257,18 @@ export function CreateFlyerForm({
 									render={({ field }) => (
 										<FormItem className="space-y-2">
 											<FormLabel className="text-sm font-medium text-text-primary">Start Date *</FormLabel>
-											<Popover>
-												<PopoverTrigger asChild>
-													<FormControl>
-														<Button
-															variant="outline"
-															className={cn(
-																"h-10 w-full pl-3 text-left font-normal",
-																!field.value && "text-muted-foreground",
-															)}
-														>
-															{field.value ? format(field.value, "PPP") : <span>Pick a start date</span>}
-															<Icon icon="solar:calendar-bold" className="ml-auto h-4 w-4 opacity-50" />
-														</Button>
-													</FormControl>
-												</PopoverTrigger>
-												<PopoverContent className="w-auto p-0" align="start">
-													<Calendar
-														mode="single"
-														selected={field.value}
-														onSelect={field.onChange}
-														disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-														initialFocus
-													/>
-												</PopoverContent>
-											</Popover>
+											<FormControl>
+												<DatePicker
+													{...field}
+													value={field.value ? dayjs(field.value) : null}
+													onChange={(date) => field.onChange(date?.toDate())}
+													placeholder="Select start date"
+													className="w-full"
+													style={{ height: "40px" }}
+													disabledDate={(current) => current && current < dayjs().startOf('day')}
+													suffixIcon={<Icon icon="solar:calendar-bold" size={16} />}
+												/>
+											</FormControl>
 											<FormDescription className="text-xs text-muted-foreground">
 												When this flyer becomes active and visible to customers
 											</FormDescription>
@@ -317,34 +286,25 @@ export function CreateFlyerForm({
 									render={({ field }) => (
 										<FormItem className="space-y-2">
 											<FormLabel className="text-sm font-medium text-text-primary">End Date *</FormLabel>
-											<Popover>
-												<PopoverTrigger asChild>
-													<FormControl>
-														<Button
-															variant="outline"
-															className={cn(
-																"h-10 w-full pl-3 text-left font-normal",
-																!field.value && "text-muted-foreground",
-															)}
-														>
-															{field.value ? format(field.value, "PPP") : <span>Pick an end date</span>}
-															<Icon icon="solar:calendar-bold" className="ml-auto h-4 w-4 opacity-50" />
-														</Button>
-													</FormControl>
-												</PopoverTrigger>
-												<PopoverContent className="w-auto p-0" align="start">
-													<Calendar
-														mode="single"
-														selected={field.value}
-														onSelect={field.onChange}
-														disabled={(date) => {
-															const startDate = form.getValues("startDate");
-															return startDate ? date <= startDate : date < new Date(new Date().setHours(0, 0, 0, 0));
-														}}
-														initialFocus
-													/>
-												</PopoverContent>
-											</Popover>
+											<FormControl>
+												<DatePicker
+													{...field}
+													value={field.value ? dayjs(field.value) : null}
+													onChange={(date) => field.onChange(date?.toDate())}
+													placeholder="Select end date"
+													className="w-full"
+													style={{ height: "40px" }}
+													disabledDate={(current) => {
+														const startDate = form.getValues("startDate");
+														return current && (
+															startDate 
+																? current <= dayjs(startDate)
+																: current < dayjs().startOf('day')
+														);
+													}}
+													suffixIcon={<Icon icon="solar:calendar-bold" size={16} />}
+												/>
+											</FormControl>
 											<FormDescription className="text-xs text-muted-foreground">
 												When this flyer expires and is no longer visible
 											</FormDescription>
@@ -357,13 +317,7 @@ export function CreateFlyerForm({
 							</div>
 						</div>
 
-						{/* Status Section */}
 						<div className="space-y-6">
-							<div className="border-b pb-2">
-								<h3 className="text-lg font-semibold text-text-primary">Status</h3>
-								<p className="text-sm text-text-secondary">Control flyer visibility</p>
-							</div>
-
 							<FormField
 								control={form.control}
 								name="status"

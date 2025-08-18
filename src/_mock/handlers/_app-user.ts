@@ -21,17 +21,20 @@ export const getAppUsers = http.get(AppUserApi.LIST, ({ request }) => {
 	const url = new URL(request.url);
 	const search = url.searchParams.get("search")?.toLowerCase();
 	const status = url.searchParams.get("status");
-	const language = url.searchParams.get("language");
 	const city = url.searchParams.get("city");
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const limit = parseInt(url.searchParams.get("limit") || "20");
 
 	let filteredUsers = [...mockUsers];
 
-	// Apply search filter (name or email)
+	// Apply search filter (first name, last name, or email)
 	if (search) {
 		filteredUsers = filteredUsers.filter(
-			(user) => user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search),
+			(user) => 
+				user.firstName.toLowerCase().includes(search) || 
+				user.lastName.toLowerCase().includes(search) || 
+				`${user.firstName} ${user.lastName}`.toLowerCase().includes(search) ||
+				user.email.toLowerCase().includes(search),
 		);
 	}
 
@@ -40,10 +43,6 @@ export const getAppUsers = http.get(AppUserApi.LIST, ({ request }) => {
 		filteredUsers = filteredUsers.filter((user) => user.status === parseInt(status));
 	}
 
-	// Apply language filter
-	if (language) {
-		filteredUsers = filteredUsers.filter((user) => user.language === language);
-	}
 
 	// Apply city filter
 	if (city) {

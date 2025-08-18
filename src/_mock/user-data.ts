@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { User } from "@/types/user";
-import { UserStatus, UserLanguage } from "@/types/user";
+import { UserStatus } from "@/types/user";
 
 // Generate realistic Dutch cities and addresses
 const DUTCH_CITIES = [
@@ -79,14 +79,14 @@ const generateUsers = (count: number): User[] => {
 		return {
 			id: faker.string.uuid(),
 			email: faker.internet.email(),
-			name: faker.person.fullName(),
+			firstName: faker.person.firstName(),
+			lastName: faker.person.lastName(),
 			profileImage: faker.helpers.arrayElement(AVATAR_IMAGES),
 			location: {
 				address: faker.location.streetAddress(),
 				city,
 				coordinates: generateDutchCoordinates(),
 			},
-			language: faker.helpers.arrayElement(Object.values(UserLanguage)),
 			status,
 			likedFlyers,
 			likedStores,
@@ -129,31 +129,10 @@ export const getUserStats = () => {
 	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 	const newUsersThisMonth = MOCK_USERS.filter((user) => user.createdAt >= thirtyDaysAgo).length;
 
-	// Calculate language distribution
-	const languageCount: Record<UserLanguage, number> = {
-		[UserLanguage.ENGLISH]: 0,
-		[UserLanguage.DUTCH]: 0,
-		[UserLanguage.FRENCH]: 0,
-		[UserLanguage.GERMAN]: 0,
-	};
-
-	MOCK_USERS.forEach((user) => {
-		languageCount[user.language]++;
-	});
-
-	const topLanguages = Object.entries(languageCount)
-		.map(([language, count]) => ({
-			language: language as UserLanguage,
-			count,
-			percentage: (count / totalUsers) * 100,
-		}))
-		.sort((a, b) => b.count - a.count);
-
 	return {
 		totalUsers,
 		activeUsers,
 		suspendedUsers,
 		newUsersThisMonth,
-		topLanguages,
 	};
 };

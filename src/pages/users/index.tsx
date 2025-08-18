@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { m } from "motion/react";
 import { varFade } from "@/components/animate/variants/fade";
 import type { User, UserFilters } from "@/types/user";
-import { UserStatus, USER_STATUS_LABELS, USER_LANGUAGE_LABELS } from "@/types/user";
+import { UserStatus, USER_STATUS_LABELS } from "@/types/user";
 import { UserFiltersComponent } from "./components/user-filters";
 import { SuspendUserDialog } from "./components/suspend-user-dialog";
 
@@ -45,7 +45,6 @@ export default function Users() {
 
 				if (filters.search) params.set("search", filters.search);
 				if (filters.status !== undefined) params.set("status", filters.status.toString());
-				if (filters.language) params.set("language", filters.language);
 				if (filters.city) params.set("city", filters.city);
 
 				const response = await fetch(`/api/app-users?${params.toString()}`);
@@ -85,7 +84,7 @@ export default function Users() {
 
 			if (data.status === 0) {
 				setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: UserStatus.SUSPENDED } : u)));
-				toast.success(`${user.name} has been suspended`);
+				toast.success(`${user.firstName} ${user.lastName} has been suspended`);
 			} else {
 				toast.error(data.message || "Failed to suspend user");
 			}
@@ -107,7 +106,7 @@ export default function Users() {
 
 			if (data.status === 0) {
 				setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: UserStatus.ACTIVE } : u)));
-				toast.success(`${user.name} has been activated`);
+				toast.success(`${user.firstName} ${user.lastName} has been activated`);
 			} else {
 				toast.error(data.message || "Failed to activate user");
 			}
@@ -215,12 +214,12 @@ export default function Users() {
 						</div>
 					) : (
 						<div className="space-y-4 relative">
-							{users.map((user, index) => (
+							{users.map((user) => (
 								<m.div
 									key={user.id}
 									initial="initial"
 									whileInView="animate"
-									viewport={{ once: true, amount: 0.2, root: null }}
+									viewport={{ once: true, amount: 0.2 }}
 									variants={varFade({ distance: 30 }).inUp}
 									className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors bg-white dark:bg-gray-900 relative gap-4"
 								>
@@ -229,7 +228,7 @@ export default function Users() {
 										<div className="flex-shrink-0">
 											<img
 												src={user.profileImage}
-												alt={user.name}
+												alt={`${user.firstName} ${user.lastName}`}
 												className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
 											/>
 										</div>
@@ -237,13 +236,12 @@ export default function Users() {
 										{/* User Info */}
 										<div className="flex-grow min-w-0">
 											<div className="flex items-center gap-2 flex-wrap">
-												<h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{user.name}</h3>
+												<h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</h3>
 												<Badge variant={getStatusBadgeVariant(user.status)}>{USER_STATUS_LABELS[user.status]}</Badge>
 											</div>
 											<p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
 											<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
 												<span className="whitespace-nowrap">📍 {user.location.city}</span>
-												<span className="whitespace-nowrap">🗣️ {USER_LANGUAGE_LABELS[user.language]}</span>
 												<span className="whitespace-nowrap">❤️ {user.totalLikedFlyers} flyers</span>
 												<span className="whitespace-nowrap">🏪 {user.totalLikedStores} stores</span>
 											</div>

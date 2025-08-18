@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "@/routes/hooks";
 import { Button } from "@/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent } from "@/ui/card";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import { CreateStoreForm } from "./components/create-store-form";
@@ -116,13 +116,7 @@ export default function CreateStore() {
 
 			{/* Create Store Form */}
 			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg flex items-center gap-2">
-						<Icon icon="solar:shop-bold" size={20} />
-						Store Information
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<CardContent className="pt-6">
 					<CreateStoreForm onSubmit={handleCreateStore} onCancel={handleCancel} isLoading={isLoading} />
 				</CardContent>
 			</Card>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "@/routes/hooks";
 import { Button } from "@/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent } from "@/ui/card";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import { CreateFlyerForm } from "../components/create-flyer-form";
@@ -166,32 +166,9 @@ export default function CreateFlyer() {
 				</div>
 			</div>
 
-			{/* Collection Context Card */}
-			<Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-				<CardContent className="pt-4">
-					<div className="flex items-center gap-3">
-						<div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-							<Icon icon="solar:folder-bold-duotone" size={20} className="text-blue-600 dark:text-blue-400" />
-						</div>
-						<div>
-							<h3 className="font-semibold text-blue-900 dark:text-blue-100">{collection.name}</h3>
-							<p className="text-sm text-blue-700 dark:text-blue-300">
-								{store?.name} • {collection.category?.replace("_", " ").toUpperCase()} • {collection.flyersCount} flyers
-							</p>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
 			{/* Create Flyer Form */}
 			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg flex items-center gap-2">
-						<Icon icon="solar:file-plus-bold" size={20} />
-						Flyer Information
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<CardContent className="pt-6">
 					<CreateFlyerForm
 						collectionId={collection.id}
 						storeId={collection.storeId}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent } from "@/ui/card";
 import { Button } from "@/ui/button";
 import { Icon } from "@/components/icon";
 import { CategoryForm } from "./components/category-form";
@@ -57,13 +57,7 @@ export default function CreateCategory() {
 
 			{/* Create Category Form */}
 			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg flex items-center gap-2">
-						<Icon icon="solar:folder-plus-bold" size={20} />
-						Category Information
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<CardContent className="pt-6">
 					<CategoryForm onSubmit={handleCreateCategory} onCancel={handleCancel} isLoading={isLoading} />
 				</CardContent>
 			</Card>

@@ -14,6 +14,26 @@ import type { Store } from "@/types/store";
 import type { Category } from "@/types/category";
 import { useEffect, useState } from "react";
 import { UploadAvatar } from "@/components/upload/upload-avatar";
+import { TimePicker, Switch } from "antd";
+import dayjs, { type Dayjs } from "dayjs";
+
+// Helper functions for time parsing
+const parseTimeRange = (timeStr: string): [Dayjs | null, Dayjs | null] | null => {
+	if (!timeStr || timeStr.toLowerCase() === "closed") return null;
+	
+	const parts = timeStr.split("-");
+	if (parts.length !== 2) return null;
+	
+	const startTime = dayjs(parts[0].trim(), "HH:mm");
+	const endTime = dayjs(parts[1].trim(), "HH:mm");
+	
+	return startTime.isValid() && endTime.isValid() ? [startTime, endTime] : null;
+};
+
+const formatTimeRange = (times: [Dayjs | null, Dayjs | null] | null): string => {
+	if (!times || !times[0] || !times[1]) return "Closed";
+	return `${times[0].format("HH:mm")}-${times[1].format("HH:mm")}`;
+};
 
 interface CreateStoreFormProps {
 	onSubmit: (data: CreateStoreFormData) => void;
@@ -127,12 +147,7 @@ export function CreateStoreForm({
 			<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
 				{/* Form Content */}
 				<div className="space-y-8">
-					{/* Basic Information Section */}
 					<div className="space-y-6">
-						<div className="border-b pb-2">
-							<h3 className="text-lg font-semibold text-text-primary">Basic Information</h3>
-							<p className="text-sm text-text-secondary">Essential details about your store</p>
-						</div>
 
 						{/* Logo Upload */}
 						<FormField
@@ -310,12 +325,7 @@ export function CreateStoreForm({
 						/>
 					</div>
 
-					{/* Location Section */}
 					<div className="space-y-6">
-						<div className="border-b pb-2">
-							<h3 className="text-lg font-semibold text-text-primary">Location Information</h3>
-							<p className="text-sm text-text-secondary">Select store location on the map</p>
-						</div>
 
 						{/* Google Maps Location Picker */}
 						<LocationPicker
@@ -363,17 +373,8 @@ export function CreateStoreForm({
 						/>
 					</div>
 
-					{/* Opening Hours */}
 					<div className="space-y-6">
-						<div className="border-b pb-2">
-							<h3 className="text-lg font-semibold text-text-primary">Opening Hours</h3>
-							<p className="text-sm text-text-secondary">Set operating hours for each day</p>
-							<p className="text-xs text-gray-500 mt-1">
-								Format: <span className="font-mono">09:00-18:00</span> or <span className="font-mono">Closed</span>
-							</p>
-						</div>
-
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							{[
 								{ name: "mondayHours" as const, label: "Monday" },
 								{ name: "tuesdayHours" as const, label: "Tuesday" },
@@ -387,19 +388,58 @@ export function CreateStoreForm({
 									key={name}
 									control={form.control}
 									name={name}
-									render={({ field }) => (
-										<FormItem className="space-y-2">
-											<FormLabel className="text-sm font-medium text-text-primary">{label} *</FormLabel>
-											<FormControl>
-												<Input placeholder="09:00-18:00 or Closed" className="h-10" {...field} />
-											</FormControl>
-											<div className="min-h-[1.25rem]">
-												<FormMessage />
-											</div>
-										</FormItem>
-									)}
+									render={({ field }) => {
+										const currentValue = parseTimeRange(field.value || "Closed");
+										const isClosed = !currentValue;
+
+										return (
+											<FormItem className="space-y-2">
+												<div className="flex items-center justify-between">
+													<FormLabel className="text-sm font-medium text-text-primary">{label} *</FormLabel>
+													<Switch
+														checked={!isClosed}
+														onChange={(checked) => {
+															if (checked) {
+																field.onChange("09:00-17:00");
+															} else {
+																field.onChange("Closed");
+															}
+														}}
+														size="small"
+													/>
+												</div>
+												<FormControl>
+													{isClosed ? (
+														<div className="h-10 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-input rounded-md flex items-center text-text-secondary text-sm">
+															Closed
+														</div>
+													) : (
+														<TimePicker.RangePicker
+															value={currentValue}
+															onChange={(times) => {
+																const formattedTime = formatTimeRange(times);
+																field.onChange(formattedTime);
+															}}
+															use12Hours
+															format="h:mm A"
+															placeholder={["Open", "Close"]}
+															className="w-full"
+															style={{ height: "40px" }}
+														/>
+													)}
+												</FormControl>
+												<div className="min-h-[1.25rem]">
+													<FormMessage />
+												</div>
+											</FormItem>
+										);
+									}}
 								/>
 							))}
+						</div>
+						{/* Simple help text */}
+						<div className="text-xs text-text-secondary">
+							Toggle the switch to open/close each day, then select times in 12-hour format.
 						</div>
 					</div>
 				</div>

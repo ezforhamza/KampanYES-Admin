@@ -3,9 +3,8 @@ import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Button } from "@/ui/button";
 import { Icon } from "@/components/icon";
-import { useTheme } from "@/theme/hooks/use-theme";
 import type { UserFilters } from "@/types/user";
-import { UserStatus, UserLanguage, USER_STATUS_LABELS, USER_LANGUAGE_LABELS } from "@/types/user";
+import { UserStatus, USER_STATUS_LABELS } from "@/types/user";
 
 interface UserFiltersProps {
 	filters: UserFilters;
@@ -14,17 +13,16 @@ interface UserFiltersProps {
 }
 
 export function UserFiltersComponent({ filters, onFiltersChange, onReset }: UserFiltersProps) {
-	const { mode } = useTheme();
 	return (
 		<Card>
 			<CardHeader>
 				<CardTitle className="text-lg">Filter Users</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 					{/* Search Input */}
 					<Input
-						placeholder="Search by name or email..."
+						placeholder="Search by first name, last name or email..."
 						value={filters.search || ""}
 						onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
 						className="max-w-sm"
@@ -53,28 +51,6 @@ export function UserFiltersComponent({ filters, onFiltersChange, onReset }: User
 						</SelectContent>
 					</Select>
 
-					{/* Language Filter */}
-					<Select
-						value={filters.language || "all"}
-						onValueChange={(value) =>
-							onFiltersChange({
-								...filters,
-								language: value === "all" ? undefined : (value as UserLanguage),
-							})
-						}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder="All languages" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All languages</SelectItem>
-							{Object.entries(USER_LANGUAGE_LABELS).map(([key, label]) => (
-								<SelectItem key={key} value={key}>
-									{label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
 
 					{/* City Filter */}
 					<Input
