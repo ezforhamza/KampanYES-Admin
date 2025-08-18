@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "@/routes/hooks";
 import { Button } from "@/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent } from "@/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
@@ -136,22 +136,35 @@ export default function Collections() {
 	};
 
 	return (
-		<div className="p-6 space-y-6">
+		<div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
 			{/* Page Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold text-text-primary">Collections</h1>
-					<p className="text-text-secondary mt-1">Manage your promotional collections and flyers</p>
+			<div className="space-y-4">
+				{/* Title Section */}
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+					<div>
+						<h1 className="text-xl sm:text-2xl font-bold text-text-primary">Collections</h1>
+						<p className="text-text-secondary mt-1 text-sm sm:text-base">Manage your promotional collections and flyers</p>
+					</div>
+					
+					{/* Desktop Create Button */}
+					<div className="hidden sm:block">
+						<Button onClick={() => push("/collections/create")}>
+							<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
+							Create Collection
+						</Button>
+					</div>
 				</div>
-				<div className="flex items-center gap-3">
+				
+				{/* Filters and Mobile Create Button */}
+				<div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
 					{/* Store Filter */}
 					<div className="flex items-center gap-2">
-						<span className="text-sm text-text-secondary">Store:</span>
+						<span className="text-sm text-text-secondary shrink-0">Store:</span>
 						<Select 
 							value={filters.storeId || "all"} 
 							onValueChange={handleStoreFilterChange}
 						>
-							<SelectTrigger className="w-[180px]">
+							<SelectTrigger className="w-full sm:w-[180px]">
 								<SelectValue placeholder="All stores" />
 							</SelectTrigger>
 							<SelectContent>
@@ -164,45 +177,54 @@ export default function Collections() {
 							</SelectContent>
 						</Select>
 					</div>
-					<Button onClick={() => push("/collections/create")}>
-						<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
-						Create Collection
-					</Button>
+					
+					{/* Mobile Create Button */}
+					<div className="sm:hidden">
+						<Button 
+							onClick={() => push("/collections/create")} 
+							className="w-full"
+							size="lg"
+						>
+							<Icon icon="solar:add-circle-bold" size={20} className="mr-2" />
+							Create Collection
+						</Button>
+					</div>
 				</div>
 			</div>
 
 			{/* Collections Grid */}
 			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg">Collections ({filteredCollections.length})</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<CardContent className="p-3 sm:p-6">
 					{isLoadingCollections ? (
-						<div className="flex items-center justify-center py-12">
+						<div className="flex items-center justify-center py-8 sm:py-12">
 							<Icon icon="solar:refresh-bold" className="mr-2 h-5 w-5 animate-spin text-primary" />
-							<span className="text-muted-foreground">Loading collections...</span>
+							<span className="text-muted-foreground text-sm sm:text-base">Loading collections...</span>
 						</div>
 					) : filteredCollections.length === 0 ? (
-						<div className="flex flex-col items-center justify-center py-12">
-							<Icon icon="solar:folder-bold-duotone" size={48} className="text-gray-400 mb-4" />
-							<h3 className="text-lg font-semibold text-text-primary mb-2">No Collections Found</h3>
-							<p className="text-text-secondary text-center mb-6">
+						<div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+							<Icon icon="solar:folder-bold-duotone" size={40} className="text-gray-400 mb-3 sm:mb-4 sm:w-12 sm:h-12" />
+							<h3 className="text-base sm:text-lg font-semibold text-text-primary mb-2">No Collections Found</h3>
+							<p className="text-text-secondary text-center mb-4 sm:mb-6 text-sm sm:text-base">
 								Create your first collection to start organizing your flyers.
 							</p>
-							<Button onClick={() => push("/collections/create")}>
+							<Button 
+								onClick={() => push("/collections/create")}
+								className="w-full sm:w-auto"
+								size="lg"
+							>
 								<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
 								Create Collection
 							</Button>
 						</div>
 					) : (
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
 							{filteredCollections.map((collection) => {
 								const thumbnailImage = thumbnailImages[collection.id] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center";
 
 								return (
 									<div
 										key={collection.id}
-										className="group border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+										className="group border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95 sm:active:scale-100"
 										onClick={() => handleCollectionAction.view(collection)}
 									>
 										{/* Thumbnail Image */}
@@ -215,65 +237,68 @@ export default function Collections() {
 												/>
 											) : (
 												<div className="w-full h-full flex items-center justify-center">
-													<Icon icon="solar:folder-bold-duotone" size={40} className="text-gray-400" />
+													<Icon icon="solar:folder-bold-duotone" size={32} className="text-gray-400 sm:w-10 sm:h-10" />
 												</div>
 											)}
 
 											{/* Status Badge */}
 											<div className="absolute top-2 left-2">
 												{collection.status === 1 ? (
-													<span className="bg-green-500 text-white px-2 py-1 text-xs rounded-full">Active</span>
+													<span className="bg-green-500 text-white px-2 py-1 text-xs rounded-full font-medium">Active</span>
 												) : (
-													<span className="bg-red-500 text-white px-2 py-1 text-xs rounded-full">Inactive</span>
+													<span className="bg-red-500 text-white px-2 py-1 text-xs rounded-full font-medium">Inactive</span>
 												)}
 											</div>
 
 											{/* Flyer Count Badge */}
 											<div className="absolute top-2 right-2">
-												<span className="bg-black/70 text-white px-2 py-1 text-xs rounded-full">
+												<span className="bg-black/70 text-white px-2 py-1 text-xs rounded-full font-medium">
 													{collection.flyersCount} flyers
 												</span>
 											</div>
 										</div>
 
 										{/* Collection Info */}
-										<div className="p-4">
-											<h3 className="font-semibold text-text-primary mb-1 group-hover:text-blue-600 transition-colors">
+										<div className="p-3 sm:p-4">
+											<h3 className="font-semibold text-text-primary mb-1 group-hover:text-blue-600 transition-colors text-sm sm:text-base line-clamp-1">
 												{collection.name}
 											</h3>
-											<p className="text-sm text-text-secondary mb-2">
+											<p className="text-xs sm:text-sm text-text-secondary mb-2 sm:mb-3 line-clamp-1">
 												{(collection as any).storeName || "Unknown Store"}
 											</p>
 
 											{/* Action Buttons */}
 											<div className="flex items-center justify-between">
 												<span className="text-xs text-text-secondary">
-													Updated {new Date(collection.updatedAt).toLocaleDateString()}
+													{new Date(collection.updatedAt).toLocaleDateString()}
 												</span>
-												<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={(e) => {
-															e.stopPropagation();
-															handleCollectionAction.edit(collection);
-														}}
-														className="h-8 w-8 p-0"
-													>
-														<Icon icon="solar:pen-bold" size={14} />
-													</Button>
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={(e) => {
-															e.stopPropagation();
-															handleCollectionAction.delete(collection);
-														}}
-														className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-														disabled={isLoading}
-													>
-														<Icon icon="solar:trash-bin-trash-bold" size={14} />
-													</Button>
+												<div className="flex items-center gap-1">
+													{/* Mobile: Always show buttons */}
+													<div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={(e) => {
+																e.stopPropagation();
+																handleCollectionAction.edit(collection);
+															}}
+															className="h-8 w-8 p-0"
+														>
+															<Icon icon="solar:pen-bold" size={14} />
+														</Button>
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={(e) => {
+																e.stopPropagation();
+																handleCollectionAction.delete(collection);
+															}}
+															className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+															disabled={isLoading}
+														>
+															<Icon icon="solar:trash-bin-trash-bold" size={14} />
+														</Button>
+													</div>
 												</div>
 											</div>
 										</div>

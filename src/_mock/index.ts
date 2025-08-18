@@ -34,6 +34,7 @@ import {
 	getNotificationStatsHandler,
 } from "./handlers/_notification";
 import { flyerHandlers } from "./handlers/_flyer";
+import { legalHandlers } from "./handlers/_legal";
 
 const handlers = [
 	signIn,
@@ -74,6 +75,7 @@ const handlers = [
 	sendNotificationNow,
 	getNotificationStatsHandler,
 	...flyerHandlers,
+	...legalHandlers,
 ];
 const worker = setupWorker(...handlers);
 

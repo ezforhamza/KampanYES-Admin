@@ -132,41 +132,52 @@ export default function FlyerDetails() {
 	const status = getFlyerStatus();
 
 	return (
-		<div className="space-y-6">
+		<div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
 			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => back()}
-						className="h-8 w-8 p-0"
-					>
-						<Icon icon="solar:arrow-left-bold" size={18} />
-					</Button>
-					<div>
-						<h1 className="text-2xl font-bold text-text-primary">{flyer.name}</h1>
-						<p className="text-text-secondary">
-							{store?.name} {collection && `• ${collection.name}`}
-						</p>
-					</div>
-				</div>
-				<div className="flex items-center gap-2">
-					<Badge variant={status.variant} className="text-xs">
-						<div className={`w-1.5 h-1.5 rounded-full bg-${status.color}-500 mr-1`}></div>
-						{status.label}
-					</Badge>
-					{collection && (
-						<Button variant="outline" onClick={() => push(`/collections/${collection.id}/flyers/${flyer.id}/edit`)}>
-							<Icon icon="solar:pen-bold" size={16} className="mr-2" />
-							Edit Flyer
+			<div className="space-y-4">
+				{/* Mobile: Stacked layout, Desktop: Side by side */}
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+					<div className="flex items-center gap-3 sm:gap-4">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => back()}
+							className="h-8 w-8 p-0 shrink-0"
+						>
+							<Icon icon="solar:arrow-left-bold" size={18} />
 						</Button>
-					)}
+						<div className="min-w-0 flex-1">
+							<h1 className="text-xl sm:text-2xl font-bold text-text-primary line-clamp-2">{flyer.name}</h1>
+							<p className="text-text-secondary text-sm sm:text-base line-clamp-1">
+								{store?.name} {collection && `• ${collection.name}`}
+							</p>
+						</div>
+					</div>
+					
+					{/* Status and Edit Button */}
+					<div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+						<Badge variant={status.variant} className="text-xs">
+							<div className={`w-1.5 h-1.5 rounded-full bg-${status.color}-500 mr-1`}></div>
+							{status.label}
+						</Badge>
+						{collection && (
+							<Button 
+								variant="outline" 
+								onClick={() => push(`/collections/${collection.id}/flyers/${flyer.id}/edit`)}
+								size="sm"
+								className="sm:size-default"
+							>
+								<Icon icon="solar:pen-bold" size={16} className="mr-2" />
+								<span className="hidden sm:inline">Edit Flyer</span>
+								<span className="sm:hidden">Edit</span>
+							</Button>
+						)}
+					</div>
 				</div>
 			</div>
 
 			{/* Main Content */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 				{/* Flyer Image & Basic Info */}
 				<div className="lg:col-span-2">
 					<Card>
@@ -196,22 +207,22 @@ export default function FlyerDetails() {
 							</div>
 
 							{/* Flyer Info */}
-							<div className="p-6">
-								<div className="flex items-start justify-between mb-4">
+							<div className="p-4 sm:p-6">
+								<div className="space-y-4">
 									<div>
-										<h2 className="text-xl font-bold text-text-primary mb-2">{flyer.name}</h2>
-										<div className="flex items-center gap-4">
+										<h2 className="text-lg sm:text-xl font-bold text-text-primary mb-3">{flyer.name}</h2>
+										<div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
 											<div>
-												<p className="text-2xl font-bold text-primary">€{flyer.finalPrice.toFixed(2)}</p>
+												<p className="text-xl sm:text-2xl font-bold text-primary">€{flyer.finalPrice.toFixed(2)}</p>
 												{flyer.discountPercentage > 0 && (
-													<p className="text-lg text-gray-500 dark:text-gray-400 line-through">
+													<p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 line-through">
 														€{flyer.price.toFixed(2)}
 													</p>
 												)}
 											</div>
 											{flyer.discountPercentage > 0 && (
-												<div className="text-right">
-													<p className="text-lg font-semibold text-green-600">
+												<div className="sm:text-right">
+													<p className="text-base sm:text-lg font-semibold text-green-600">
 														Save €{(flyer.price - flyer.finalPrice).toFixed(2)}
 													</p>
 													<p className="text-sm text-gray-500 dark:text-gray-400">{flyer.discountPercentage}% off</p>
@@ -222,8 +233,8 @@ export default function FlyerDetails() {
 								</div>
 
 								{/* Validity Period */}
-								<div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-									<h3 className="font-semibold text-text-primary mb-2 flex items-center gap-2">
+								<div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+									<h3 className="font-semibold text-text-primary mb-2 flex items-center gap-2 text-sm sm:text-base">
 										<Icon icon="solar:calendar-bold" size={16} />
 										Validity Period
 									</h3>
@@ -253,26 +264,26 @@ export default function FlyerDetails() {
 				</div>
 
 				{/* Sidebar - Store & Collection Info */}
-				<div className="space-y-6">
+				<div className="space-y-4 sm:space-y-6">
 					{/* Store Information */}
 					{store && (
 						<Card>
-							<CardHeader>
-								<CardTitle className="text-lg flex items-center gap-2">
-									<Icon icon="solar:shop-bold" size={20} />
+							<CardHeader className="pb-3 sm:pb-6">
+								<CardTitle className="text-base sm:text-lg flex items-center gap-2">
+									<Icon icon="solar:shop-bold" size={18} className="sm:w-5 sm:h-5" />
 									Store Information
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="space-y-4">
+							<CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
 								<div>
-									<h3 className="font-semibold text-text-primary text-lg">{store.name}</h3>
-									<p className="text-text-secondary">{store.description}</p>
+									<h3 className="font-semibold text-text-primary text-base sm:text-lg line-clamp-2">{store.name}</h3>
+									<p className="text-text-secondary text-sm sm:text-base line-clamp-3">{store.description}</p>
 								</div>
 
 								<div>
-									<p className="text-sm font-medium text-text-secondary mb-1">Location</p>
-									<p className="text-text-primary">{store.location.address}</p>
-									<p className="text-text-primary">
+									<p className="text-xs sm:text-sm font-medium text-text-secondary mb-1">Location</p>
+									<p className="text-sm sm:text-base text-text-primary line-clamp-2">{store.location.address}</p>
+									<p className="text-sm sm:text-base text-text-primary">
 										{store.location.city}, {store.location.postcode}
 									</p>
 								</div>
@@ -318,16 +329,16 @@ export default function FlyerDetails() {
 					{/* Collection Information */}
 					{collection && (
 						<Card>
-							<CardHeader>
-								<CardTitle className="text-lg flex items-center gap-2">
-									<Icon icon="solar:folder-bold" size={20} />
+							<CardHeader className="pb-3 sm:pb-6">
+								<CardTitle className="text-base sm:text-lg flex items-center gap-2">
+									<Icon icon="solar:folder-bold" size={18} className="sm:w-5 sm:h-5" />
 									Collection
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="space-y-4">
+							<CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
 								<div>
-									<h3 className="font-semibold text-text-primary">{collection.name}</h3>
-									<p className="text-text-secondary text-sm">{collection.flyersCount} flyers in this collection</p>
+									<h3 className="font-semibold text-text-primary text-sm sm:text-base line-clamp-2">{collection.name}</h3>
+									<p className="text-text-secondary text-xs sm:text-sm">{collection.flyersCount} flyers in this collection</p>
 								</div>
 
 								<div>
@@ -355,14 +366,14 @@ export default function FlyerDetails() {
 
 					{/* Technical Details */}
 					<Card>
-						<CardHeader>
-							<CardTitle className="text-lg flex items-center gap-2">
-								<Icon icon="solar:info-circle-bold" size={20} />
+						<CardHeader className="pb-3 sm:pb-6">
+							<CardTitle className="text-base sm:text-lg flex items-center gap-2">
+								<Icon icon="solar:info-circle-bold" size={18} className="sm:w-5 sm:h-5" />
 								Details
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="grid grid-cols-1 gap-3 text-sm">
+						<CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+							<div className="grid grid-cols-1 gap-3 text-xs sm:text-sm">
 								<div>
 									<p className="text-text-secondary">Flyer ID</p>
 									<p className="font-mono text-text-primary text-xs">{flyer.id}</p>

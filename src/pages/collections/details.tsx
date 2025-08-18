@@ -169,27 +169,38 @@ export default function CollectionDetails() {
 	}
 
 	return (
-		<div className="p-6 space-y-6">
+		<div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
 			{/* Page Header */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<Button variant="ghost" size="sm" onClick={() => back()} className="h-8 w-8 p-0">
+			<div className="space-y-4">
+				{/* Back Button and Title */}
+				<div className="flex items-center gap-3 sm:gap-4">
+					<Button variant="ghost" size="sm" onClick={() => back()} className="h-8 w-8 p-0 shrink-0">
 						<Icon icon="solar:arrow-left-bold" size={18} />
 					</Button>
-					<div>
-						<h1 className="text-2xl font-bold text-text-primary">{collection.name}</h1>
-						<p className="text-text-secondary mt-1">
+					<div className="min-w-0 flex-1">
+						<h1 className="text-xl sm:text-2xl font-bold text-text-primary line-clamp-2">{collection.name}</h1>
+						<p className="text-text-secondary mt-1 text-sm sm:text-base line-clamp-1">
 							{store?.name} • {flyers.length} flyers
 						</p>
 					</div>
 				</div>
 
-				<div className="flex items-center gap-2">
-					<Button variant="outline" onClick={() => push(`/collections/${collection.id}/edit`)}>
+				{/* Action Buttons */}
+				<div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+					<Button 
+						variant="outline" 
+						onClick={() => push(`/collections/${collection.id}/edit`)}
+						className="w-full sm:w-auto"
+						size="lg"
+					>
 						<Icon icon="solar:pen-bold" size={16} className="mr-2" />
 						Edit Collection
 					</Button>
-					<Button onClick={() => push(`/collections/${collection.id}/flyers/create`)}>
+					<Button 
+						onClick={() => push(`/collections/${collection.id}/flyers/create`)}
+						className="w-full sm:w-auto"
+						size="lg"
+					>
 						<Icon icon="solar:add-circle-bold" size={16} className="mr-2" />
 						Add Flyer
 					</Button>
@@ -199,12 +210,8 @@ export default function CollectionDetails() {
 
 			{/* Flyers Grid */}
 			<Card>
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<CardTitle className="text-lg">
-							Flyers ({showActiveOnly ? displayFlyers.length : flyers.length}
-							{showActiveOnly && flyers.length > displayFlyers.length && ` of ${flyers.length}`})
-						</CardTitle>
+				<CardHeader className="pb-3">
+					<div className="flex items-center justify-end">
 						<div className="flex items-center gap-2">
 							<Button
 								variant={showActiveOnly ? "default" : "outline"}
