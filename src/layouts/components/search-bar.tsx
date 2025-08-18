@@ -3,7 +3,7 @@ import useLocale from "@/locales/use-locale";
 import { useRouter } from "@/routes/hooks";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandSeparator } from "@/ui/command";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/ui/command";
 import { ScrollArea } from "@/ui/scroll-area";
 import { Text } from "@/ui/typography";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -14,6 +14,8 @@ interface SearchItem {
 	key: string;
 	label: string;
 	path: string;
+	type?: 'navigation' | 'action';
+	icon?: string;
 }
 
 // 高亮文本组件
@@ -45,6 +47,41 @@ const SearchBar = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const navData = useFilteredNavData();
 
+	// Quick actions for creating new items
+	const quickActions = useMemo(() => {
+		const actions: SearchItem[] = [
+			{
+				key: 'add-store',
+				label: 'Add Store',
+				path: '/stores/create',
+				type: 'action',
+				icon: 'solar:shop-bold'
+			},
+			{
+				key: 'add-category',
+				label: 'Add Category', 
+				path: '/categories/create',
+				type: 'action',
+				icon: 'solar:tag-bold'
+			},
+			{
+				key: 'add-collection',
+				label: 'Add Collection',
+				path: '/collections/create', 
+				type: 'action',
+				icon: 'solar:folder-bold'
+			},
+			{
+				key: 'add-flyer',
+				label: 'Add Flyer',
+				path: '/collections', // Will need to select collection first
+				type: 'action',
+				icon: 'solar:file-text-bold'
+			}
+		];
+		return actions;
+	}, []);
+
 	// Flatten navigation data into searchable items
 	const flattenedItems = useMemo(() => {
 		const items: SearchItem[] = [];
@@ -57,6 +94,7 @@ const SearchBar = () => {
 							key: item.path,
 							label: item.title,
 							path: item.path,
+							type: 'navigation'
 						});
 					}
 					if (item.children) {
@@ -69,6 +107,26 @@ const SearchBar = () => {
 		flattenItems(navData);
 		return items;
 	}, [navData]);
+
+	// Filter items based on search query
+	const filteredNavigationItems = useMemo(() => {
+		const query = searchQuery.toLowerCase();
+		if (!query) return flattenedItems;
+		return flattenedItems.filter((item) => 
+			t(item.label).toLowerCase().includes(query) || 
+			item.key.toLowerCase().includes(query)
+		);
+	}, [searchQuery, t, flattenedItems]);
+
+	// Filter actions based on search query
+	const filteredActions = useMemo(() => {
+		const query = searchQuery.toLowerCase();
+		if (!query) return quickActions;
+		return quickActions.filter((action) =>
+			action.label.toLowerCase().includes(query) ||
+			action.key.toLowerCase().includes(query)
+		);
+	}, [searchQuery, quickActions]);
 
 	// const searchResult = useMemo(() => {
 	// 	const query = searchQuery.toLowerCase();
@@ -109,21 +167,44 @@ const SearchBar = () => {
 
 			<CommandDialog open={open} onOpenChange={setOpen}>
 				<CommandInput placeholder="Type a command or search..." value={searchQuery} onValueChange={setSearchQuery} />
-				<ScrollArea className="h-[400px]">
-					<CommandEmpty>No results found.</CommandEmpty>
-					<CommandGroup heading="Navigations">
-						{flattenedItems.map(({ key, label }) => (
-							<CommandItem key={key} onSelect={() => handleSelect(key)} className="flex flex-col items-start">
-								<div className="font-medium">
-									<HighlightText text={t(label)} query={searchQuery} />
-								</div>
-								<div className="text-xs text-muted-foreground">
-									<HighlightText text={key} query={searchQuery} />
-								</div>
-							</CommandItem>
-						))}
-					</CommandGroup>
-				</ScrollArea>
+				<CommandList className="max-h-[400px] overflow-y-auto">
+						<CommandEmpty>No results found.</CommandEmpty>
+						
+						{/* Quick Actions */}
+						{filteredActions.length > 0 && (
+							<CommandGroup heading="Quick Actions">
+								{filteredActions.map(({ key, label, path, icon }) => (
+									<CommandItem key={key} onSelect={() => handleSelect(path)} className="flex items-center gap-3">
+										{icon && <Icon icon={icon} size={16} className="text-primary" />}
+										<div className="flex flex-col items-start flex-1">
+											<div className="font-medium">
+												<HighlightText text={label} query={searchQuery} />
+											</div>
+											<div className="text-xs text-muted-foreground">
+												<HighlightText text={path} query={searchQuery} />
+											</div>
+										</div>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						)}
+
+						{/* Navigation Items */}
+						{filteredNavigationItems.length > 0 && (
+							<CommandGroup heading="Navigation">
+								{filteredNavigationItems.map(({ key, label }) => (
+									<CommandItem key={key} onSelect={() => handleSelect(key)} className="flex flex-col items-start">
+										<div className="font-medium">
+											<HighlightText text={t(label)} query={searchQuery} />
+										</div>
+										<div className="text-xs text-muted-foreground">
+											<HighlightText text={key} query={searchQuery} />
+										</div>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						)}
+				</CommandList>
 				<CommandSeparator />
 				<div className="flex flex-wrap text-text-primary p-2 justify-end gap-2">
 					<div className="flex items-center gap-1">
