@@ -21,7 +21,6 @@ export const getAppUsers = http.get(AppUserApi.LIST, ({ request }) => {
 	const url = new URL(request.url);
 	const search = url.searchParams.get("search")?.toLowerCase();
 	const status = url.searchParams.get("status");
-	const city = url.searchParams.get("city");
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const limit = parseInt(url.searchParams.get("limit") || "20");
 
@@ -44,10 +43,6 @@ export const getAppUsers = http.get(AppUserApi.LIST, ({ request }) => {
 	}
 
 
-	// Apply city filter
-	if (city) {
-		filteredUsers = filteredUsers.filter((user) => user.location.city.toLowerCase().includes(city.toLowerCase()));
-	}
 
 	// Sort by creation date (newest first)
 	const sortedUsers = filteredUsers.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

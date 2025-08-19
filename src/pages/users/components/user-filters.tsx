@@ -43,11 +43,13 @@ export function UserFiltersComponent({ filters, onFiltersChange, onReset }: User
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">All statuses</SelectItem>
-							{Object.entries(USER_STATUS_LABELS).map(([key, label]) => (
-								<SelectItem key={key} value={key}>
-									{label}
-								</SelectItem>
-							))}
+							{Object.entries(USER_STATUS_LABELS)
+								.filter(([key]) => parseInt(key) !== UserStatus.PENDING_VERIFICATION)
+								.map(([key, label]) => (
+									<SelectItem key={key} value={key}>
+										{label}
+									</SelectItem>
+								))}
 						</SelectContent>
 					</Select>
 

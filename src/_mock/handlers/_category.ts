@@ -4,7 +4,6 @@ import { MOCK_CATEGORIES } from "../category-data";
 import { MOCK_STORES } from "../store-data";
 import { getPaginationParams, paginateArray } from "../utils";
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/types/category";
-import { BasicStatus } from "@/types/enum";
 
 // Category API endpoints
 export const CategoryApi = {
@@ -27,7 +26,6 @@ const calculateStoreCount = (categoryId: string): number => {
 export const getCategories = http.get(CategoryApi.LIST, ({ request }) => {
 	const url = new URL(request.url);
 	const search = url.searchParams.get("search")?.toLowerCase();
-	const status = url.searchParams.get("status");
 
 	// Get pagination parameters
 	const paginationParams = getPaginationParams(request);
@@ -37,11 +35,6 @@ export const getCategories = http.get(CategoryApi.LIST, ({ request }) => {
 	// Apply search filter
 	if (search) {
 		filteredCategories = filteredCategories.filter((category) => category.name.toLowerCase().includes(search));
-	}
-
-	// Apply status filter
-	if (status !== null && status !== undefined) {
-		filteredCategories = filteredCategories.filter((category) => category.status === parseInt(status));
 	}
 
 	// Sort by creation date (newest first) and update store counts
@@ -93,7 +86,6 @@ export const createCategory = http.post(CategoryApi.CREATE, async ({ request }) 
 		id: faker.string.uuid(),
 		name: categoryData.name,
 		image: imageUrl,
-		status: BasicStatus.ENABLE,
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		storesCount: 0,
@@ -157,7 +149,6 @@ export const updateCategory = http.put(CategoryApi.UPDATE, async ({ request, par
 		...mockCategories[categoryIndex],
 		name: updateData.name || mockCategories[categoryIndex].name,
 		image: imageUpdate !== undefined ? imageUpdate : mockCategories[categoryIndex].image,
-		status: updateData.status !== undefined ? updateData.status : mockCategories[categoryIndex].status,
 		updatedAt: new Date(),
 	};
 

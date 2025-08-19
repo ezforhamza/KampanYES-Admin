@@ -9,7 +9,6 @@ interface DashboardStats {
 	activeStores: number;
 	totalUsers: number;
 	totalCategories: number;
-	activeCategories: number;
 	totalFlyers: number;
 	collectionsCount: number;
 }
@@ -89,7 +88,6 @@ export default function Overview() {
 					activeStores: stores.filter((s: any) => s.status === 1).length,
 					totalUsers: users.length,
 					totalCategories: categories.length,
-					activeCategories: categories.filter((c: any) => c.status === 1).length,
 					totalFlyers: flyers.length,
 					collectionsCount: collections.length,
 				});
@@ -162,7 +160,7 @@ export default function Overview() {
 		{
 			title: "Categories",
 			value: stats.totalCategories,
-			subtitle: `${stats.activeCategories} active categories`,
+			subtitle: "All categories are active",
 			icon: "solar:folder-bold",
 			color: "bg-purple-500",
 		},

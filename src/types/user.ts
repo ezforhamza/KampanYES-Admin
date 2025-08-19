@@ -8,17 +8,6 @@ export enum UserStatus {
 }
 
 
-/**
- * User location information (similar to store location)
- */
-export interface UserLocation {
-	address: string;
-	city: string;
-	coordinates?: {
-		lat: number;
-		lng: number;
-	};
-}
 
 /**
  * User interface for KampanYES app users
@@ -29,7 +18,6 @@ export interface User {
 	firstName: string;
 	lastName: string;
 	profileImage: string;
-	location: UserLocation;
 	status: UserStatus;
 	likedFlyers: string[]; // Array of flyer IDs
 	likedStores: string[]; // Array of store IDs
@@ -55,7 +43,6 @@ export interface UpdateUserRequest {
 export interface UserFilters {
 	search?: string; // Search by first name, last name or email
 	status?: UserStatus;
-	city?: string;
 }
 
 /**

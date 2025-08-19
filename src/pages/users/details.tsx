@@ -8,7 +8,6 @@ import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import type { User } from "@/types/user";
 import { UserStatus, USER_STATUS_LABELS } from "@/types/user";
-import { UserMapDisplay } from "./components/user-map-display";
 import { SuspendUserDialog } from "./components/suspend-user-dialog";
 // import { LikedFlyersModal } from "./components/liked-flyers-modal";
 // import { LikedStoresModal } from "./components/liked-stores-modal";
@@ -221,11 +220,6 @@ export default function UserDetails() {
 
 									{/* Quick Stats */}
 									<div className="flex flex-wrap gap-4">
-										<div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-full">
-											<span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-												📍 {user.location.city}
-											</span>
-										</div>
 										<div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full">
 											<span className="text-sm text-green-700 dark:text-green-300 font-medium">
 												📅 Joined {formatDate(user.createdAt).split(',')[0]}
@@ -261,9 +255,9 @@ export default function UserDetails() {
 				</div>
 
 				{/* Content Grid */}
-				<div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+				<div className="grid grid-cols-1 gap-8">
 					{/* Account Information */}
-					<div className="xl:col-span-1">
+					<div className="max-w-2xl mx-auto w-full">
 						<Card className="h-fit shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
 							<CardHeader className="pb-4">
 								<CardTitle className="flex items-center gap-3 text-xl">
@@ -292,81 +286,6 @@ export default function UserDetails() {
 											<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
 												{formatDate(user.lastLoginAt)}
 											</p>
-										</div>
-									)}
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-
-					{/* Location Information */}
-					<div className="xl:col-span-2">
-						<Card className="h-fit shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-							<CardHeader className="pb-4">
-								<CardTitle className="flex items-center gap-3 text-xl">
-									<div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-										<Icon icon="solar:map-point-bold" size={20} className="text-green-600 dark:text-green-400" />
-									</div>
-									Location & Address
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-									{/* Address Details */}
-									<div className="space-y-6">
-										<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-											<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-												Full Address
-											</label>
-											<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
-												{user.location.address}
-											</p>
-										</div>
-										
-										<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-											<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-												City
-											</label>
-											<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
-												{user.location.city}
-											</p>
-										</div>
-
-										{user.location.coordinates && (
-											<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-												<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-													Coordinates
-												</label>
-												<p className="text-sm font-mono text-gray-700 dark:text-gray-300 mt-1">
-													{user.location.coordinates.lat.toFixed(6)}, {user.location.coordinates.lng.toFixed(6)}
-												</p>
-												<Button
-													variant="outline"
-													size="sm"
-													className="mt-3 shadow-sm hover:shadow-md transition-all duration-200"
-													onClick={() => {
-														const url = `https://www.google.com/maps?q=${user.location.coordinates!.lat},${user.location.coordinates!.lng}`;
-														window.open(url, "_blank");
-													}}
-												>
-													<Icon icon="solar:map-point-outline" size={16} className="mr-2" />
-													View on Google Maps
-												</Button>
-											</div>
-										)}
-									</div>
-
-									{/* Map */}
-									{user.location.coordinates && (
-										<div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-600">
-											<UserMapDisplay
-												latitude={user.location.coordinates.lat}
-												longitude={user.location.coordinates.lng}
-												userName={`${user.firstName} ${user.lastName}`}
-												address={user.location.address}
-												height={300}
-												showCard={false}
-											/>
 										</div>
 									)}
 								</div>

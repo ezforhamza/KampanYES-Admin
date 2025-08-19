@@ -2,24 +2,6 @@ import { faker } from "@faker-js/faker";
 import type { User } from "@/types/user";
 import { UserStatus } from "@/types/user";
 
-// Generate realistic Dutch cities and addresses
-const DUTCH_CITIES = [
-	"Amsterdam",
-	"Rotterdam",
-	"The Hague",
-	"Utrecht",
-	"Eindhoven",
-	"Tilburg",
-	"Groningen",
-	"Almere",
-	"Breda",
-	"Nijmegen",
-	"Apeldoorn",
-	"Haarlem",
-	"Arnhem",
-	"Zaanstad",
-	"Amersfoort",
-];
 
 // Import actual store and flyer data to use real IDs
 import { MOCK_STORES } from "./store-data";
@@ -35,11 +17,6 @@ const generateLikedItems = (items: string[], maxCount: number = 5): string[] => 
 	return faker.helpers.arrayElements(items, count);
 };
 
-// Helper function to generate Dutch coordinates
-const generateDutchCoordinates = () => ({
-	lat: faker.number.float({ min: 51.0, max: 53.5, fractionDigits: 6 }),
-	lng: faker.number.float({ min: 3.0, max: 7.5, fractionDigits: 6 }),
-});
 
 // Local avatar images
 const AVATAR_IMAGES = [
@@ -56,7 +33,6 @@ const AVATAR_IMAGES = [
 // Generate mock users
 const generateUsers = (count: number): User[] => {
 	return Array.from({ length: count }, () => {
-		const city = faker.helpers.arrayElement(DUTCH_CITIES);
 		const likedFlyers = generateLikedItems(SAMPLE_FLYER_IDS);
 		const likedStores = generateLikedItems(SAMPLE_STORE_IDS);
 		const createdAt = faker.date.between({
@@ -82,11 +58,6 @@ const generateUsers = (count: number): User[] => {
 			firstName: faker.person.firstName(),
 			lastName: faker.person.lastName(),
 			profileImage: faker.helpers.arrayElement(AVATAR_IMAGES),
-			location: {
-				address: faker.location.streetAddress(),
-				city,
-				coordinates: generateDutchCoordinates(),
-			},
 			status,
 			likedFlyers,
 			likedStores,

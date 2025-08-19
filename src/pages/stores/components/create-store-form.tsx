@@ -107,7 +107,7 @@ export function CreateStoreForm({
 				const response = await fetch("/api/categories");
 				const data = await response.json();
 				if (data.status === 0) {
-					setCategories(data.data.list.filter((cat: Category) => cat.status === BasicStatus.ENABLE));
+					setCategories(data.data.list);
 				}
 			} catch (error) {
 				console.error("Error fetching categories:", error);

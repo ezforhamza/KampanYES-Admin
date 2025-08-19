@@ -31,7 +31,7 @@ export default function Header({ leftSlot }: HeaderProps) {
 
 			<div className="flex items-center gap-1">
 				<SearchBar />
-				<LocalePicker />
+				{/* <LocalePicker /> */}
 				<SettingButton />
 				<AccountDropdown />
 			</div>

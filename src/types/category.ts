@@ -1,5 +1,3 @@
-import type { BasicStatus } from "./enum";
-
 /**
  * Category interface for KampanYES admin panel
  * Categories are used to organize stores and collections
@@ -8,7 +6,6 @@ export interface Category {
 	id: string;
 	name: string;
 	image: string;
-	status: BasicStatus;
 	createdAt: Date;
 	updatedAt: Date;
 	// Statistics
@@ -29,7 +26,6 @@ export interface CreateCategoryRequest {
 export interface UpdateCategoryRequest {
 	name?: string;
 	image?: File | string;
-	status?: BasicStatus;
 }
 
 /**
@@ -37,5 +33,4 @@ export interface UpdateCategoryRequest {
  */
 export interface CategoryFilters {
 	search?: string;
-	status?: BasicStatus;
 }

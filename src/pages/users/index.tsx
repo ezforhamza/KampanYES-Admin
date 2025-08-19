@@ -45,7 +45,6 @@ export default function Users() {
 
 				if (filters.search) params.set("search", filters.search);
 				if (filters.status !== undefined) params.set("status", filters.status.toString());
-				// if (filters.city) params.set("city", filters.city);
 
 				const response = await fetch(`/api/app-users?${params.toString()}`);
 				const data = await response.json();
@@ -128,10 +127,6 @@ export default function Users() {
 		}
 	};
 
-	// Handle navigate to user detail page
-	const handleViewUserDetails = (user: User) => {
-		push(`/users/${user.id}`);
-	};
 
 	// Reset filters
 	const handleResetFilters = () => {
@@ -229,7 +224,7 @@ export default function Users() {
 											<img
 												src={user.profileImage}
 												alt={`${user.firstName} ${user.lastName}`}
-												className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+												className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
 											/>
 										</div>
 
@@ -240,21 +235,11 @@ export default function Users() {
 												<Badge variant={getStatusBadgeVariant(user.status)}>{USER_STATUS_LABELS[user.status]}</Badge>
 											</div>
 											<p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-											<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
-												<span className="whitespace-nowrap">📍 {user.location.city}</span>
-												{/* <span className="whitespace-nowrap">❤️ {user.totalLikedFlyers} flyers</span> */}
-												{/* <span className="whitespace-nowrap">🏪 {user.totalLikedStores} stores</span> */}
-											</div>
 										</div>
 									</div>
 
 									{/* Action Buttons */}
 									<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:flex-shrink-0 w-full sm:w-auto">
-										<Button variant="outline" size="sm" onClick={() => handleViewUserDetails(user)} className="w-full sm:w-auto">
-											<Icon icon="solar:eye-outline" size={16} className="mr-1" />
-											<span className="sm:inline">View Details</span>
-										</Button>
-
 										{user.status === UserStatus.ACTIVE ? (
 											<Button
 												variant="outline"

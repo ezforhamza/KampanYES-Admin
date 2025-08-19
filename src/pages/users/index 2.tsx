@@ -45,7 +45,6 @@ export default function Users() {
 
 			if (filters.search) params.set("search", filters.search);
 			if (filters.status !== undefined) params.set("status", filters.status.toString());
-			if (filters.city) params.set("city", filters.city);
 
 			const response = await fetch(`/api/app-users?${params.toString()}`);
 			const data = await response.json();
@@ -242,7 +241,6 @@ export default function Users() {
 											</div>
 											<p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
 											<div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
-												<span>📍 {user.location.city}</span>
 												<span>❤️ {user.totalLikedFlyers} flyers</span>
 												<span>🏪 {user.totalLikedStores} stores</span>
 											</div>

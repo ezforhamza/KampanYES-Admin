@@ -3,12 +3,9 @@ import { useNavigate } from "react-router";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Card, CardContent } from "@/ui/card";
-import { Badge } from "@/ui/badge";
 import { Icon } from "@/components/icon";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import type { Category, CategoryFilters } from "@/types/category";
-import { BasicStatus } from "@/types/enum";
 import { toast } from "sonner";
 
 export default function Categories() {
@@ -25,7 +22,6 @@ export default function Categories() {
 			setLoading(true);
 			const queryParams = new URLSearchParams();
 			if (filters.search) queryParams.set("search", filters.search);
-			if (filters.status !== undefined) queryParams.set("status", filters.status.toString());
 
 			const response = await fetch(`/api/categories?${queryParams}`);
 			const data = await response.json();
@@ -106,12 +102,6 @@ export default function Categories() {
 		setFilters((prev) => ({ ...prev, search }));
 	};
 
-	const handleStatusFilter = (status: string) => {
-		setFilters((prev) => ({
-			...prev,
-			status: status === "all" ? undefined : (Number(status) as BasicStatus),
-		}));
-	};
 
 	const handleCreateClick = () => {
 		navigate("/categories/create");
@@ -150,16 +140,6 @@ export default function Categories() {
 						className="max-w-sm"
 					/>
 				</div>
-				<Select value={filters.status?.toString() || "all"} onValueChange={handleStatusFilter}>
-					<SelectTrigger className="w-[180px]">
-						<SelectValue placeholder="Filter by status" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All Status</SelectItem>
-						<SelectItem value={BasicStatus.ENABLE.toString()}>Active</SelectItem>
-						<SelectItem value={BasicStatus.DISABLE.toString()}>Inactive</SelectItem>
-					</SelectContent>
-				</Select>
 			</div>
 
 			{/* Categories Grid */}
@@ -191,11 +171,6 @@ export default function Categories() {
 											"https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
 									}}
 								/>
-								<div className="absolute top-2 right-2">
-									<Badge variant={category.status === BasicStatus.ENABLE ? "default" : "secondary"}>
-										{category.status === BasicStatus.ENABLE ? "Active" : "Inactive"}
-									</Badge>
-								</div>
 							</div>
 							<CardContent className="p-4">
 								<div className="space-y-2">

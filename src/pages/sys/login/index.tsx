@@ -20,9 +20,9 @@ function LoginPage() {
 	}
 
 	return (
-		<div className="relative grid min-h-svh lg:grid-cols-2 bg-background">
-			<div className="flex flex-col gap-4 p-6 md:p-10">
-				<div className="flex justify-center gap-2 md:justify-start">
+		<div className="relative flex min-h-svh bg-background">
+			<div className="flex flex-col gap-4 p-6 md:p-10 w-full">
+				<div className="flex justify-center gap-2">
 					<div className="flex items-center gap-2 font-medium cursor-pointer">
 						<Logo size={28} />
 						<span>{GLOBAL_CONFIG.appName}</span>
@@ -32,21 +32,13 @@ function LoginPage() {
 					<div className="w-full max-w-xs">
 						<LoginProvider>
 							<LoginForm />
-							<MobileForm />
-							<QrCodeFrom />
-							<RegisterForm />
-							<ResetForm />
 						</LoginProvider>
 					</div>
 				</div>
 			</div>
 
-			<div className="relative hidden bg-background-paper lg:block">
-				<img src={PlaceholderImg} alt="placeholder img" className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5] dark:grayscale" />
-			</div>
-
 			<div className="absolute right-2 top-0 flex flex-row">
-				<LocalePicker />
+				{/* <LocalePicker /> */}
 				<SettingButton />
 			</div>
 		</div>
