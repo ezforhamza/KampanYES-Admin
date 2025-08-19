@@ -7,8 +7,6 @@ import { Button } from "@/ui/button";
 import { Upload } from "@/components/upload/upload";
 import { Icon } from "@/components/icon";
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/types/category";
-import { BasicStatus } from "@/types/enum";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 
 // Schema for category form validation
 const categorySchema = z.object({
@@ -16,7 +14,6 @@ const categorySchema = z.object({
 	image: z.union([z.instanceof(File), z.string().url("Please provide a valid image URL")], {
 		errorMap: () => ({ message: "Category image is required" }),
 	}),
-	status: z.nativeEnum(BasicStatus).optional(),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -35,14 +32,12 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 			return {
 				name: initialCategory.name,
 				image: initialCategory.image,
-				status: initialCategory.status,
 			};
 		}
 
 		return {
 			name: "",
 			image: undefined as any,
-			status: BasicStatus.ENABLE,
 		};
 	};
 
@@ -56,7 +51,6 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 			const submitData: UpdateCategoryRequest = {
 				name: data.name,
 				image: data.image,
-				status: data.status,
 			};
 			onSubmit(submitData);
 		} else {
@@ -145,45 +139,6 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 						)}
 					/>
 
-					{/* Status (only for edit mode) */}
-					{editMode && (
-						<FormField
-							control={form.control}
-							name="status"
-							render={({ field }) => (
-								<FormItem className="space-y-2 max-w-sm">
-									<FormLabel className="text-sm font-medium text-text-primary">Category Status *</FormLabel>
-									<Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString()}>
-										<FormControl>
-											<SelectTrigger className="h-10">
-												<SelectValue placeholder="Select status" />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											<SelectItem value={BasicStatus.ENABLE.toString()}>
-												<div className="flex items-center gap-2">
-													<div className="w-2 h-2 rounded-full bg-green-500"></div>
-													Active
-												</div>
-											</SelectItem>
-											<SelectItem value={BasicStatus.DISABLE.toString()}>
-												<div className="flex items-center gap-2">
-													<div className="w-2 h-2 rounded-full bg-red-500"></div>
-													Inactive
-												</div>
-											</SelectItem>
-										</SelectContent>
-									</Select>
-									<FormDescription className="text-xs text-muted-foreground">
-										Inactive categories are hidden from store selection
-									</FormDescription>
-									<div className="min-h-[1.25rem]">
-										<FormMessage />
-									</div>
-								</FormItem>
-							)}
-						/>
-					)}
 				</div>
 
 				{/* Footer */}

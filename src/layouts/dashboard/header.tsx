@@ -1,4 +1,3 @@
-import LocalePicker from "@/components/locale-picker";
 import { useSettings } from "@/store/settingStore";
 import { cn } from "@/utils";
 import type { ReactNode } from "react";

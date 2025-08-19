@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "@/routes/hooks";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Badge } from "@/ui/badge";
@@ -25,7 +24,6 @@ export default function Users() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalUsers, setTotalUsers] = useState(0);
 	const [suspendDialogUser, setSuspendDialogUser] = useState<User | null>(null);
-	const { push } = useRouter();
 	const observerRef = useRef<IntersectionObserver | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
