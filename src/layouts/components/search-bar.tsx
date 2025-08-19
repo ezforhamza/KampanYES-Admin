@@ -62,20 +62,6 @@ const SearchBar = () => {
 				path: '/categories/create',
 				type: 'action',
 				icon: 'solar:tag-bold'
-			},
-			{
-				key: 'add-collection',
-				label: 'Add Collection',
-				path: '/collections/create', 
-				type: 'action',
-				icon: 'solar:folder-bold'
-			},
-			{
-				key: 'add-flyer',
-				label: 'Add Flyer',
-				path: '/collections', // Will need to select collection first
-				type: 'action',
-				icon: 'solar:file-text-bold'
 			}
 		];
 		return actions;

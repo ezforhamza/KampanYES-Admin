@@ -17,7 +17,7 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
 			type: NotificationTargetType.ALL_USERS,
 		},
 		status: NotificationStatus.SENT,
-		scheduledFor: new Date("2024-08-15T08:00:00Z"),
+		// scheduledFor: new Date("2024-08-15T08:00:00Z"),
 		sentAt: new Date("2024-08-15T08:00:00Z"),
 		createdAt: new Date("2024-08-14T10:30:00Z"),
 		updatedAt: new Date("2024-08-15T08:00:00Z"),
@@ -27,27 +27,8 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
 		readCount: 892,
 	},
 
-	// Auto-generated new store notification
-	{
-		id: "notif-2",
-		type: NotificationType.NEW_STORE,
-		title: "New Store Added: IKEA Amsterdam",
-		message: "A new furniture store has joined KampanYES! Check out their latest collections and deals.",
-		target: {
-			type: NotificationTargetType.ALL_USERS,
-		},
-		status: NotificationStatus.SENT,
-		relatedStoreId: "6", // Assume IKEA store ID
-		sentAt: new Date("2024-08-13T14:20:00Z"),
-		createdAt: new Date("2024-08-13T14:20:00Z"),
-		updatedAt: new Date("2024-08-13T14:20:00Z"),
-		createdBy: "system",
-		totalTargetUsers: 1247,
-		deliveredCount: 1201,
-		readCount: 743,
-	},
 
-	// Scheduled admin message
+	// Recent admin message - sent
 	{
 		id: "notif-3",
 		type: NotificationType.ADMIN_MESSAGE,
@@ -56,34 +37,16 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
 		target: {
 			type: NotificationTargetType.ALL_USERS,
 		},
-		status: NotificationStatus.SCHEDULED,
-		scheduledFor: new Date("2024-08-17T09:00:00Z"),
+		status: NotificationStatus.SENT,
+		sentAt: new Date("2024-08-17T09:00:00Z"),
 		createdAt: new Date("2024-08-14T16:45:00Z"),
-		updatedAt: new Date("2024-08-14T16:45:00Z"),
+		updatedAt: new Date("2024-08-17T09:00:00Z"),
 		createdBy: "admin-1",
+		totalTargetUsers: 1247,
+		deliveredCount: 1203,
+		readCount: 856,
 	},
 
-	// Auto-generated new collection notification
-	{
-		id: "notif-4",
-		type: NotificationType.NEW_COLLECTION,
-		title: "New Collection: Back to School Essentials",
-		message: "Albert Heijn just launched a new collection perfect for back-to-school shopping!",
-		target: {
-			type: NotificationTargetType.STORE_FOLLOWERS,
-			storeId: "1", // Albert Heijn
-		},
-		status: NotificationStatus.SENT,
-		relatedStoreId: "1",
-		relatedCollectionId: "coll-6",
-		sentAt: new Date("2024-08-12T11:15:00Z"),
-		createdAt: new Date("2024-08-12T11:15:00Z"),
-		updatedAt: new Date("2024-08-12T11:15:00Z"),
-		createdBy: "system",
-		totalTargetUsers: 342,
-		deliveredCount: 331,
-		readCount: 278,
-	},
 
 	// Custom user targeting
 	{
@@ -105,7 +68,7 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
 		readCount: 4,
 	},
 
-	// Draft notification
+	// Recent admin message - sent
 	{
 		id: "notif-6",
 		type: NotificationType.ADMIN_MESSAGE,
@@ -114,50 +77,16 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
 		target: {
 			type: NotificationTargetType.ALL_USERS,
 		},
-		status: NotificationStatus.DRAFT,
+		status: NotificationStatus.SENT,
+		sentAt: new Date("2024-08-14T17:30:00Z"),
 		createdAt: new Date("2024-08-14T15:00:00Z"),
 		updatedAt: new Date("2024-08-14T17:30:00Z"),
 		createdBy: "admin-1",
+		totalTargetUsers: 1247,
+		deliveredCount: 1189,
+		readCount: 934,
 	},
 
-	// Auto-generated discount notification
-	{
-		id: "notif-7",
-		type: NotificationType.DISCOUNT_ADDED,
-		title: "New 40% Discount at MediaMarkt!",
-		message: "MediaMarkt just added a huge discount on gaming laptops. Don't miss out!",
-		target: {
-			type: NotificationTargetType.STORE_FOLLOWERS,
-			storeId: "2", // MediaMarkt
-		},
-		status: NotificationStatus.SENT,
-		relatedStoreId: "2",
-		relatedCollectionId: "coll-2",
-		relatedFlyerId: "flyer-7",
-		sentAt: new Date("2024-08-10T16:45:00Z"),
-		createdAt: new Date("2024-08-10T16:45:00Z"),
-		updatedAt: new Date("2024-08-10T16:45:00Z"),
-		createdBy: "system",
-		totalTargetUsers: 156,
-		deliveredCount: 149,
-		readCount: 98,
-	},
-
-	// Cancelled notification
-	{
-		id: "notif-8",
-		type: NotificationType.ADMIN_MESSAGE,
-		title: "Flash Sale Alert",
-		message: "24-hour flash sale starting now! Limited time offers across all categories.",
-		target: {
-			type: NotificationTargetType.ALL_USERS,
-		},
-		status: NotificationStatus.CANCELLED,
-		scheduledFor: new Date("2024-08-09T12:00:00Z"),
-		createdAt: new Date("2024-08-08T14:20:00Z"),
-		updatedAt: new Date("2024-08-09T10:30:00Z"),
-		createdBy: "admin-2",
-	},
 ];
 
 // Helper functions for notification management
@@ -208,11 +137,6 @@ export const calculateTargetUserCount = (target: Notification["target"]): number
 
 		case NotificationTargetType.CUSTOM_USERS:
 			return target.userIds?.length || 0;
-
-		case NotificationTargetType.STORE_FOLLOWERS:
-			// In a real app, this would query users who liked the specific store
-			// For mock data, we'll estimate based on store popularity
-			return Math.floor(Math.random() * 500) + 50; // 50-550 users
 
 		default:
 			return 0;

@@ -57,14 +57,14 @@ export function DeleteNotificationDialog({
 						<p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">{notification.message}</p>
 					</div>
 
-					{notification.scheduledFor && (
+					{/* {notification.scheduledFor && (
 						<div>
 							<h4 className="font-medium text-sm mb-1">Scheduled for:</h4>
 							<p className="text-sm text-gray-600 dark:text-gray-400">
 								{new Date(notification.scheduledFor).toLocaleString()}
 							</p>
 						</div>
-					)}
+					)} */}
 				</div>
 
 				<DialogFooter>

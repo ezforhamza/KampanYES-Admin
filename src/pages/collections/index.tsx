@@ -42,7 +42,6 @@ export default function Collections() {
 			params.set("limit", "100"); // Get all collections for now
 
 			if (filters.search) params.set("search", filters.search);
-			if (filters.categoryId) params.set("category", filters.categoryId);
 			if (filters.status !== undefined) params.set("status", filters.status.toString());
 			if (filters.storeId) params.set("storeId", filters.storeId);
 
@@ -80,9 +79,6 @@ export default function Collections() {
 	// Filter collections based on current filters
 	const filteredCollections = collections.filter((collection) => {
 		if (filters.search && !collection.name.toLowerCase().includes(filters.search.toLowerCase())) {
-			return false;
-		}
-		if (filters.categoryId && collection.categoryId !== filters.categoryId) {
 			return false;
 		}
 		if (filters.status !== undefined && collection.status !== filters.status) {

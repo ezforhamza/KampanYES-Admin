@@ -10,11 +10,11 @@ import type { User } from "@/types/user";
 import { UserStatus, USER_STATUS_LABELS } from "@/types/user";
 import { UserMapDisplay } from "./components/user-map-display";
 import { SuspendUserDialog } from "./components/suspend-user-dialog";
-import { LikedFlyersModal } from "./components/liked-flyers-modal";
-import { LikedStoresModal } from "./components/liked-stores-modal";
-import { getStoresByIds, getFlyersByIds } from "@/_mock/user-data";
-import type { Store } from "@/types/store";
-import type { Flyer } from "@/types/flyer";
+// import { LikedFlyersModal } from "./components/liked-flyers-modal";
+// import { LikedStoresModal } from "./components/liked-stores-modal";
+// import { getStoresByIds, getFlyersByIds } from "@/_mock/user-data";
+// import type { Store } from "@/types/store";
+// import type { Flyer } from "@/types/flyer";
 
 /**
  * User Detail Page Component
@@ -27,10 +27,10 @@ export default function UserDetails() {
 	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
-	const [likedStores, setLikedStores] = useState<Store[]>([]);
-	const [likedFlyers, setLikedFlyers] = useState<Flyer[]>([]);
-	const [flyersModalOpen, setFlyersModalOpen] = useState(false);
-	const [storesModalOpen, setStoresModalOpen] = useState(false);
+	// const [likedStores, setLikedStores] = useState<Store[]>([]);
+	// const [likedFlyers, setLikedFlyers] = useState<Flyer[]>([]);
+	// const [flyersModalOpen, setFlyersModalOpen] = useState(false);
+	// const [storesModalOpen, setStoresModalOpen] = useState(false);
 
 	// Fetch user details
 	const fetchUser = async () => {
@@ -46,10 +46,10 @@ export default function UserDetails() {
 				setUser(userData);
 
 				// Populate liked stores and flyers data
-				const userLikedStores = getStoresByIds(userData.likedStores) as Store[];
-				const userLikedFlyers = getFlyersByIds(userData.likedFlyers) as Flyer[];
-				setLikedStores(userLikedStores);
-				setLikedFlyers(userLikedFlyers);
+				// const userLikedStores = getStoresByIds(userData.likedStores) as Store[];
+				// const userLikedFlyers = getFlyersByIds(userData.likedFlyers) as Flyer[];
+				// setLikedStores(userLikedStores);
+				// setLikedFlyers(userLikedFlyers);
 			} else {
 				toast.error("User not found");
 				push("/users");
@@ -131,14 +131,14 @@ export default function UserDetails() {
 	};
 
 	// Handle flyer click
-	const handleFlyerClick = (flyer: Flyer) => {
-		push(`/flyers/${flyer.id}`);
-	};
+	// const handleFlyerClick = (flyer: Flyer) => {
+	// 	push(`/flyers/${flyer.id}`);
+	// };
 
 	// Handle store click
-	const handleStoreClick = (store: Store) => {
-		push(`/stores/${store.id}`);
-	};
+	// const handleStoreClick = (store: Store) => {
+	// 	push(`/stores/${store.id}`);
+	// };
 
 	useEffect(() => {
 		fetchUser();
@@ -170,276 +170,209 @@ export default function UserDetails() {
 	}
 
 	return (
-		<div className="space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<Button variant="outline" onClick={() => back()}>
+		<div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+			<div className="container mx-auto p-6 space-y-8">
+				{/* Header with Back Button */}
+				<div className="flex items-center gap-4 mb-8">
+					<Button variant="outline" onClick={() => back()} className="shadow-sm">
 						<Icon icon="solar:arrow-left-outline" size={16} className="mr-2" />
-						Back
+						Back to Users
 					</Button>
-					<div className="flex items-center gap-3">
-						<img
-							src={user.profileImage}
-							alt={`${user.firstName} ${user.lastName}`}
-							className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-						/>
-						<div>
-							<div className="flex items-center gap-2">
-								<h1 className="text-2xl font-bold text-text-primary">{user.firstName} {user.lastName}</h1>
-								<Badge variant={getStatusBadgeVariant(user.status)}>{USER_STATUS_LABELS[user.status]}</Badge>
+				</div>
+
+				{/* Hero Section with User Profile */}
+				<div className="relative">
+					<div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+						{/* Background Pattern */}
+						<div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
+						
+						<div className="relative p-8">
+							<div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+								{/* Profile Image */}
+								<div className="relative">
+									<div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 p-1 shadow-lg">
+										<img
+											src={user.profileImage}
+											alt={`${user.firstName} ${user.lastName}`}
+											className="w-full h-full rounded-full object-cover border-4 border-white dark:border-gray-800"
+										/>
+									</div>
+									<div className="absolute -bottom-2 -right-2">
+										<Badge 
+											variant={getStatusBadgeVariant(user.status)}
+											className="px-3 py-1 text-sm font-semibold shadow-lg"
+										>
+											{USER_STATUS_LABELS[user.status]}
+										</Badge>
+									</div>
+								</div>
+
+								{/* User Info */}
+								<div className="flex-1 space-y-4">
+									<div>
+										<h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+											{user.firstName} {user.lastName}
+										</h1>
+										<div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+											<Icon icon="solar:letter-outline" size={18} />
+											<span className="text-lg">{user.email}</span>
+										</div>
+									</div>
+
+									{/* Quick Stats */}
+									<div className="flex flex-wrap gap-4">
+										<div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-full">
+											<span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+												📍 {user.location.city}
+											</span>
+										</div>
+										<div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full">
+											<span className="text-sm text-green-700 dark:text-green-300 font-medium">
+												📅 Joined {formatDate(user.createdAt).split(',')[0]}
+											</span>
+										</div>
+									</div>
+								</div>
+
+								{/* Action Button */}
+								<div className="flex md:flex-col gap-3">
+									{user.status === UserStatus.ACTIVE ? (
+										<Button
+											variant="destructive"
+											onClick={() => setSuspendDialogOpen(true)}
+											className="shadow-lg hover:shadow-xl transition-all duration-200"
+										>
+											<Icon icon="solar:forbidden-circle-outline" size={18} className="mr-2" />
+											Suspend User
+										</Button>
+									) : user.status === UserStatus.SUSPENDED ? (
+										<Button
+											onClick={handleActivateUser}
+											className="bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+										>
+											<Icon icon="solar:check-circle-outline" size={18} className="mr-2" />
+											Activate User
+										</Button>
+									) : null}
+								</div>
 							</div>
-							<p className="text-text-secondary">{user.email}</p>
 						</div>
 					</div>
 				</div>
-				<div className="flex items-center gap-2">
-					{user.status === UserStatus.ACTIVE ? (
-						<Button
-							variant="outline"
-							onClick={() => setSuspendDialogOpen(true)}
-							className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
-						>
-							<Icon icon="solar:forbidden-circle-outline" size={16} className="mr-2" />
-							Suspend User
-						</Button>
-					) : user.status === UserStatus.SUSPENDED ? (
-						<Button
-							variant="outline"
-							onClick={handleActivateUser}
-							className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
-						>
-							<Icon icon="solar:check-circle-outline" size={16} className="mr-2" />
-							Activate User
-						</Button>
-					) : null}
-				</div>
-			</div>
 
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Basic Information */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Icon icon="solar:user-bold" size={20} />
-							Basic Information
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-6">
-						<div className="grid grid-cols-2 gap-4">
-							<div>
-								<label className="text-sm font-medium text-text-secondary">First Name</label>
-								<p className="text-text-primary font-medium">{user.firstName}</p>
-							</div>
-							<div>
-								<label className="text-sm font-medium text-text-secondary">Last Name</label>
-								<p className="text-text-primary font-medium">{user.lastName}</p>
-							</div>
-						</div>
-
-						<div>
-							<label className="text-sm font-medium text-text-secondary">Email</label>
-							<p className="text-text-primary font-medium">{user.email}</p>
-						</div>
-
-						<div>
-							<label className="text-sm font-medium text-text-secondary">Profile Image</label>
-							<div className="mt-2">
-								<img
-									src={user.profileImage}
-									alt={`${user.firstName} ${user.lastName}`}
-									className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-								/>
-							</div>
-						</div>
-
-						<div className="grid grid-cols-2 gap-4">
-							<div>
-								<label className="text-sm font-medium text-text-secondary">Account Created</label>
-								<p className="text-text-primary">{formatDate(user.createdAt)}</p>
-							</div>
-							{user.lastLoginAt && (
-								<div>
-									<label className="text-sm font-medium text-text-secondary">Last Login</label>
-									<p className="text-text-primary">{formatDate(user.lastLoginAt)}</p>
-								</div>
-							)}
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* Activity & Engagement */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Icon icon="solar:heart-bold" size={20} />
-							Activity & Engagement
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-6">
-						<div className="grid grid-cols-2 gap-4">
-							<div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-								<div className="text-2xl font-bold text-text-primary">{user.totalLikedFlyers}</div>
-								<div className="text-sm text-text-secondary">Liked Flyers</div>
-							</div>
-							<div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-								<div className="text-2xl font-bold text-text-primary">{user.totalLikedStores}</div>
-								<div className="text-sm text-text-secondary">Liked Stores</div>
-							</div>
-						</div>
-
-						{(likedFlyers.length > 0 || likedStores.length > 0) && (
-							<div className="space-y-4">
-								{likedFlyers.length > 0 && (
-									<div>
-										<div className="flex items-center justify-between mb-2">
-											<label className="text-sm font-medium text-text-secondary">Liked Flyers</label>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => setFlyersModalOpen(true)}
-												className="text-xs h-auto p-1"
-											>
-												<Icon icon="solar:eye-outline" size={12} className="mr-1" />
-												View All ({likedFlyers.length})
-											</Button>
-										</div>
-										<div className="space-y-2">
-											{likedFlyers.slice(0, 4).map((flyer) => (
-												<div
-													key={flyer.id}
-													onClick={() => handleFlyerClick(flyer)}
-													className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-												>
-													<img src={flyer.image} alt={flyer.name} className="w-10 h-10 rounded object-cover" />
-													<div className="flex-1 min-w-0">
-														<p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-															{flyer.name}
-														</p>
-														<p className="text-xs text-gray-500 dark:text-gray-400">
-															€{flyer.finalPrice} <span className="line-through text-gray-400">€{flyer.price}</span>
-														</p>
-													</div>
-													<Badge variant="secondary" className="text-xs">
-														-{flyer.discountPercentage}%
-													</Badge>
-												</div>
-											))}
-											{likedFlyers.length > 4 && (
-												<p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-													+{likedFlyers.length - 4} more flyers
-												</p>
-											)}
-										</div>
+				{/* Content Grid */}
+				<div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+					{/* Account Information */}
+					<div className="xl:col-span-1">
+						<Card className="h-fit shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+							<CardHeader className="pb-4">
+								<CardTitle className="flex items-center gap-3 text-xl">
+									<div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+										<Icon icon="solar:user-bold" size={20} className="text-blue-600 dark:text-blue-400" />
 									</div>
-								)}
-
-								{likedStores.length > 0 && (
-									<div>
-										<div className="flex items-center justify-between mb-2">
-											<label className="text-sm font-medium text-text-secondary">Liked Stores</label>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => setStoresModalOpen(true)}
-												className="text-xs h-auto p-1"
-											>
-												<Icon icon="solar:eye-outline" size={12} className="mr-1" />
-												View All ({likedStores.length})
-											</Button>
-										</div>
-										<div className="space-y-2">
-											{likedStores.slice(0, 4).map((store) => (
-												<div
-													key={store.id}
-													onClick={() => handleStoreClick(store)}
-													className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-												>
-													<div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center">
-														<Icon icon="solar:shop-bold" size={20} className="text-primary" />
-													</div>
-													<div className="flex-1 min-w-0">
-														<p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-															{store.name}
-														</p>
-														<p className="text-xs text-gray-500 dark:text-gray-400">
-															{store.location.city} • {store.category?.replace("_", " ").toLowerCase() || "Unknown category"}
-														</p>
-													</div>
-													<Badge variant="outline" className="text-xs">
-														{store.activeFlyersCount} flyers
-													</Badge>
-												</div>
-											))}
-											{likedStores.length > 4 && (
-												<p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-													+{likedStores.length - 4} more stores
-												</p>
-											)}
-										</div>
-									</div>
-								)}
-							</div>
-						)}
-					</CardContent>
-				</Card>
-
-				{/* Location Information */}
-				<div className="lg:col-span-2">
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Icon icon="solar:map-point-bold" size={20} />
-								Location Information
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-6">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+									Account Details
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-6">
 								<div className="space-y-4">
-									<div>
-										<label className="text-sm font-medium text-text-secondary">Address</label>
-										<p className="text-text-primary">{user.location.address}</p>
+									<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+										<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+											Account Created
+										</label>
+										<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
+											{formatDate(user.createdAt)}
+										</p>
 									</div>
-									<div>
-										<label className="text-sm font-medium text-text-secondary">City</label>
-										<p className="text-text-primary">{user.location.city}</p>
-									</div>
-									{user.location.coordinates && (
-										<div>
-											<label className="text-sm font-medium text-text-secondary">Coordinates</label>
-											<p className="text-text-primary">
-												{user.location.coordinates.lat.toFixed(6)}, {user.location.coordinates.lng.toFixed(6)}
+									
+									{user.lastLoginAt && (
+										<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+											<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+												Last Login
+											</label>
+											<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
+												{formatDate(user.lastLoginAt)}
 											</p>
-											<Button
-												variant="outline"
-												size="sm"
-												className="mt-2"
-												onClick={() => {
-													const url = `https://www.google.com/maps?q=${user.location.coordinates!.lat},${user.location.coordinates!.lng}`;
-													window.open(url, "_blank");
-												}}
-											>
-												<Icon icon="solar:map-point-outline" size={16} className="mr-1" />
-												View on Google Maps
-											</Button>
 										</div>
 									)}
 								</div>
-								{user.location.coordinates && (
-									<div>
-										<UserMapDisplay
-											latitude={user.location.coordinates.lat}
-											longitude={user.location.coordinates.lng}
-											userName={`${user.firstName} ${user.lastName}`}
-											address={user.location.address}
-											height={250}
-											showCard={false}
-										/>
+							</CardContent>
+						</Card>
+					</div>
+
+					{/* Location Information */}
+					<div className="xl:col-span-2">
+						<Card className="h-fit shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+							<CardHeader className="pb-4">
+								<CardTitle className="flex items-center gap-3 text-xl">
+									<div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+										<Icon icon="solar:map-point-bold" size={20} className="text-green-600 dark:text-green-400" />
 									</div>
-								)}
-							</div>
-						</CardContent>
-					</Card>
+									Location & Address
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+									{/* Address Details */}
+									<div className="space-y-6">
+										<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+											<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+												Full Address
+											</label>
+											<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
+												{user.location.address}
+											</p>
+										</div>
+										
+										<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+											<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+												City
+											</label>
+											<p className="text-lg font-medium text-gray-900 dark:text-white mt-1">
+												{user.location.city}
+											</p>
+										</div>
+
+										{user.location.coordinates && (
+											<div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+												<label className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+													Coordinates
+												</label>
+												<p className="text-sm font-mono text-gray-700 dark:text-gray-300 mt-1">
+													{user.location.coordinates.lat.toFixed(6)}, {user.location.coordinates.lng.toFixed(6)}
+												</p>
+												<Button
+													variant="outline"
+													size="sm"
+													className="mt-3 shadow-sm hover:shadow-md transition-all duration-200"
+													onClick={() => {
+														const url = `https://www.google.com/maps?q=${user.location.coordinates!.lat},${user.location.coordinates!.lng}`;
+														window.open(url, "_blank");
+													}}
+												>
+													<Icon icon="solar:map-point-outline" size={16} className="mr-2" />
+													View on Google Maps
+												</Button>
+											</div>
+										)}
+									</div>
+
+									{/* Map */}
+									{user.location.coordinates && (
+										<div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-600">
+											<UserMapDisplay
+												latitude={user.location.coordinates.lat}
+												longitude={user.location.coordinates.lng}
+												userName={`${user.firstName} ${user.lastName}`}
+												address={user.location.address}
+												height={300}
+												showCard={false}
+											/>
+										</div>
+									)}
+								</div>
+							</CardContent>
+						</Card>
+					</div>
 				</div>
 			</div>
 
@@ -454,20 +387,20 @@ export default function UserDetails() {
 			)}
 
 			{/* Liked Flyers Modal */}
-			<LikedFlyersModal
+			{/* <LikedFlyersModal
 				flyers={likedFlyers}
 				isOpen={flyersModalOpen}
 				onClose={() => setFlyersModalOpen(false)}
 				userName={user ? `${user.firstName} ${user.lastName}` : "User"}
-			/>
+			/> */}
 
 			{/* Liked Stores Modal */}
-			<LikedStoresModal
+			{/* <LikedStoresModal
 				stores={likedStores}
 				isOpen={storesModalOpen}
 				onClose={() => setStoresModalOpen(false)}
 				userName={user ? `${user.firstName} ${user.lastName}` : "User"}
-			/>
+			/> */}
 		</div>
 	);
 }

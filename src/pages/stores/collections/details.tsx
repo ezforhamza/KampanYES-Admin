@@ -8,64 +8,91 @@ import { isFlyerActive } from "@/_mock/collection-data";
 import { getSharedFlyers } from "@/_mock/shared-data";
 import type { Collection } from "@/types/collection";
 import type { Flyer } from "@/types/flyer";
+import type { Store } from "@/types/store";
 
 /**
- * Collection Details Page Component
- * Shows collection information and all flyers within the collection
+ * Store-specific Collection Details Page
+ * Shows collection information and flyers within store context
  */
-export default function CollectionDetails() {
+export default function StoreCollectionDetails() {
+	const [store, setStore] = useState<Store | null>(null);
 	const [collection, setCollection] = useState<Collection | null>(null);
 	const [flyers, setFlyers] = useState<Flyer[]>([]);
+	const [isLoadingStore, setIsLoadingStore] = useState(true);
 	const [isLoadingCollection, setIsLoadingCollection] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 	const [showActiveOnly, setShowActiveOnly] = useState(false);
-	const { push, back } = useRouter();
-	const { id } = useParams();
+	const { push } = useRouter();
+	const { id: storeId, collectionId } = useParams();
 
 	useEffect(() => {
-		const loadCollection = async () => {
+		const loadData = async () => {
+			if (!storeId || !collectionId) return;
+
+			// Load store first
+			setIsLoadingStore(true);
+			try {
+				const storeResponse = await fetch(`/api/stores/${storeId}`);
+				const storeResult = await storeResponse.json();
+
+				if (storeResult.status === 0) {
+					setStore(storeResult.data);
+				} else {
+					toast.error("Store not found");
+					push("/stores");
+					return;
+				}
+			} catch (error) {
+				console.error("Failed to load store:", error);
+				toast.error("Failed to load store");
+				push("/stores");
+				return;
+			} finally {
+				setIsLoadingStore(false);
+			}
+
+			// Load collection
 			setIsLoadingCollection(true);
 			try {
-				// Use MSW API to fetch collection
-				const response = await fetch(`/api/collections/${id}`);
-				const result = await response.json();
+				const collectionResponse = await fetch(`/api/collections/${collectionId}`);
+				const collectionResult = await collectionResponse.json();
 
-				if (result.status === 0) {
-					setCollection(result.data);
+				if (collectionResult.status === 0) {
+					// Verify collection belongs to this store
+					if (collectionResult.data.storeId !== storeId) {
+						toast.error("Collection not found in this store");
+						push(`/stores/${storeId}`);
+						return;
+					}
+
+					setCollection(collectionResult.data);
 
 					// Get flyers for this collection from shared data
-					const collectionFlyers = getSharedFlyers().filter((f) => f.collectionId === result.data.id);
+					const collectionFlyers = getSharedFlyers().filter((f) => f.collectionId === collectionResult.data.id);
 					setFlyers(collectionFlyers);
 				} else {
-					toast.error("Collection not found", {
-						description: "The collection you're looking for doesn't exist.",
-					});
-					push("/collections");
+					toast.error("Collection not found");
+					push(`/stores/${storeId}`);
 					return;
 				}
 			} catch (error) {
 				console.error("Failed to load collection:", error);
-				toast.error("Failed to load collection", {
-					description: "Please try again or contact support if the problem persists.",
-				});
-				push("/collections");
+				toast.error("Failed to load collection");
+				push(`/stores/${storeId}`);
 			} finally {
 				setIsLoadingCollection(false);
 			}
 		};
 
-		if (id) {
-			loadCollection();
-		}
-	}, [id, push]);
-
-	// Get store information - can be retrieved from collection data or API call if needed
-	const store = collection ? { id: collection.storeId, name: (collection as any).storeName || "Unknown Store" } : null;
+		loadData();
+	}, [storeId, collectionId, push]);
 
 	// Filter flyers based on active status
 	const displayFlyers = showActiveOnly ? flyers.filter((f) => isFlyerActive(f)) : flyers;
 
 	const handleDeleteFlyer = async (flyer: Flyer) => {
+		if (!collection || !store) return;
+
 		setIsLoading(true);
 
 		const loadingToast = toast.loading("Deleting flyer...", {
@@ -80,9 +107,7 @@ export default function CollectionDetails() {
 			setFlyers((prev) => prev.filter((f) => f.id !== flyer.id));
 
 			// Update collection flyer count
-			if (collection) {
-				setCollection((prev) => (prev ? { ...prev, flyersCount: prev.flyersCount - 1 } : null));
-			}
+			setCollection((prev) => (prev ? { ...prev, flyersCount: prev.flyersCount - 1 } : null));
 
 			toast.success("Flyer deleted successfully!", {
 				description: `${flyer.name} has been removed from the collection.`,
@@ -101,14 +126,13 @@ export default function CollectionDetails() {
 
 	const handleFlyerAction = {
 		edit: (flyer: Flyer) => {
-			// Navigate to flyer edit page within collection context
-			push(`/collections/${collection?.id}/flyers/${flyer.id}/edit`);
+			push(`/stores/${storeId}/collections/${collectionId}/flyers/${flyer.id}/edit`);
 		},
 		delete: (flyer: Flyer) => {
 			handleDeleteFlyer(flyer);
 		},
 		setThumbnail: async (flyer: Flyer) => {
-			if (!collection) return;
+			if (!collection || !store) return;
 
 			setIsLoading(true);
 			const loadingToast = toast.loading("Setting thumbnail...", {
@@ -116,7 +140,6 @@ export default function CollectionDetails() {
 			});
 
 			try {
-				// Make API call to update collection thumbnail
 				const response = await fetch(`/api/collections/${collection.id}`, {
 					method: 'PUT',
 					headers: {
@@ -130,7 +153,6 @@ export default function CollectionDetails() {
 				const result = await response.json();
 
 				if (result.status === 0) {
-					// Update collection thumbnail
 					setCollection((prev) => (prev ? { ...prev, thumbnailFlyerId: flyer.id } : null));
 
 					toast.success("Thumbnail updated!", {
@@ -152,7 +174,7 @@ export default function CollectionDetails() {
 		},
 	};
 
-	if (isLoadingCollection) {
+	if (isLoadingStore || isLoadingCollection) {
 		return (
 			<div className="p-6 space-y-6">
 				<div className="flex items-center justify-center min-h-[400px]">
@@ -165,7 +187,7 @@ export default function CollectionDetails() {
 		);
 	}
 
-	if (!collection) {
+	if (!store || !collection) {
 		return null;
 	}
 
@@ -173,15 +195,26 @@ export default function CollectionDetails() {
 		<div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
 			{/* Page Header */}
 			<div className="space-y-4">
-				{/* Back Button and Title */}
+				{/* Breadcrumb and Navigation */}
 				<div className="flex items-center gap-3 sm:gap-4">
-					<Button variant="ghost" size="sm" onClick={() => back()} className="h-8 w-8 p-0 shrink-0">
+					<Button variant="ghost" size="sm" onClick={() => push(`/stores/${storeId}`)} className="h-8 w-8 p-0 shrink-0">
 						<Icon icon="solar:arrow-left-bold" size={18} />
 					</Button>
 					<div className="min-w-0 flex-1">
+						<div className="text-sm text-text-secondary mb-1">
+							<Button 
+								variant="link" 
+								onClick={() => push(`/stores/${storeId}`)}
+								className="p-0 h-auto text-sm text-text-secondary hover:text-primary"
+							>
+								{store.name}
+							</Button>
+							<span className="mx-1">→</span>
+							<span>Collections</span>
+						</div>
 						<h1 className="text-xl sm:text-2xl font-bold text-text-primary line-clamp-2">{collection.name}</h1>
 						<p className="text-text-secondary mt-1 text-sm sm:text-base line-clamp-1">
-							{store?.name} • {flyers.length} flyers
+							{flyers.length} flyers
 						</p>
 					</div>
 				</div>
@@ -190,7 +223,7 @@ export default function CollectionDetails() {
 				<div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
 					<Button 
 						variant="outline" 
-						onClick={() => push(`/collections/${collection.id}/edit`)}
+						onClick={() => push(`/stores/${storeId}/collections/${collectionId}/edit`)}
 						className="w-full sm:w-auto"
 						size="lg"
 					>
@@ -198,7 +231,7 @@ export default function CollectionDetails() {
 						Edit Collection
 					</Button>
 					<Button 
-						onClick={() => push(`/collections/${collection.id}/flyers/create`)}
+						onClick={() => push(`/stores/${storeId}/collections/${collectionId}/flyers/create`)}
 						className="w-full sm:w-auto"
 						size="lg"
 					>
@@ -207,7 +240,6 @@ export default function CollectionDetails() {
 					</Button>
 				</div>
 			</div>
-
 
 			{/* Flyers Grid */}
 			<Card>
@@ -236,7 +268,7 @@ export default function CollectionDetails() {
 									<p className="text-text-secondary text-center mb-6">
 										Start adding flyers to this collection to showcase your promotional content.
 									</p>
-									<Button onClick={() => push(`/collections/${collection.id}/flyers/create`)}>
+									<Button onClick={() => push(`/stores/${storeId}/collections/${collectionId}/flyers/create`)}>
 										<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
 										Add First Flyer
 									</Button>

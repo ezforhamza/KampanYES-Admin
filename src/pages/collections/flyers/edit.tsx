@@ -8,7 +8,8 @@ import { CreateFlyerForm } from "../components/create-flyer-form";
 import type { CreateFlyerFormData } from "../schemas/flyer-schema";
 import type { Flyer } from "@/types/flyer";
 import type { Collection } from "@/types/collection";
-import { MOCK_COLLECTIONS, MOCK_FLYERS } from "@/_mock/collection-data";
+import { MOCK_COLLECTIONS } from "@/_mock/collection-data";
+import { getSharedFlyers } from "@/_mock/shared-data";
 import { MOCK_STORES } from "@/_mock/store-data";
 
 export default function EditFlyer() {
@@ -35,7 +36,7 @@ export default function EditFlyer() {
 					return;
 				}
 
-				const foundFlyer = MOCK_FLYERS.find((f) => f.id === flyerId && f.collectionId === id);
+				const foundFlyer = getSharedFlyers().find((f) => f.id === flyerId && f.collectionId === id);
 				if (!foundFlyer) {
 					toast.error("Flyer not found", {
 						description: "The flyer you're trying to edit doesn't exist.",
@@ -78,11 +79,12 @@ export default function EditFlyer() {
 			// Calculate final price
 			const finalPrice = data.price - data.price * (data.discountPercentage / 100);
 
-			// Update the flyer in mock data
-			const flyerIndex = MOCK_FLYERS.findIndex((f) => f.id === flyer.id);
+			// Update the flyer in shared data
+			const sharedFlyers = getSharedFlyers();
+			const flyerIndex = sharedFlyers.findIndex((f) => f.id === flyer.id);
 			if (flyerIndex !== -1) {
-				MOCK_FLYERS[flyerIndex] = {
-					...MOCK_FLYERS[flyerIndex],
+				sharedFlyers[flyerIndex] = {
+					...sharedFlyers[flyerIndex],
 					name: data.name,
 					image: typeof data.image === "string" ? data.image : URL.createObjectURL(data.image),
 					price: data.price,
@@ -179,7 +181,7 @@ export default function EditFlyer() {
 						<div>
 							<h3 className="font-semibold text-blue-900 dark:text-blue-100">{collection.name}</h3>
 							<p className="text-sm text-blue-700 dark:text-blue-300">
-								{store?.name} • {collection.category?.replace("_", " ").toUpperCase()} • {collection.flyersCount} flyers
+								{store?.name} • {collection.flyersCount} flyers
 							</p>
 						</div>
 					</div>

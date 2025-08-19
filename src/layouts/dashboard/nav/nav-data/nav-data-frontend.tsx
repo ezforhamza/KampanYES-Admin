@@ -26,11 +26,6 @@ export const frontendNavData: NavProps["data"] = [
 				icon: <Icon icon="solar:shop-bold-duotone" size="24" />,
 			},
 			{
-				title: "sys.nav.collections",
-				path: "/collections",
-				icon: <Icon icon="solar:folder-bold-duotone" size="24" />,
-			},
-			{
 				title: "sys.nav.categories",
 				path: "/categories",
 				icon: <Icon icon="solar:tag-bold-duotone" size="24" />,

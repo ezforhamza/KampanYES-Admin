@@ -25,7 +25,7 @@ export default function CreateNotification() {
 			const result = await response.json();
 
 			if (result.status === 0) {
-				toast.success(data.scheduledFor ? "Notification scheduled successfully!" : "Notification sent successfully!");
+				toast.success("Notification sent successfully!");
 				push("/notifications");
 			} else {
 				toast.error(result.message || "Failed to create notification");

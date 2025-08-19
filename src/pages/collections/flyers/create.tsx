@@ -8,7 +8,8 @@ import { CreateFlyerForm } from "../components/create-flyer-form";
 import type { CreateFlyerFormData } from "../schemas/flyer-schema";
 import type { Flyer } from "@/types/flyer";
 import type { Collection } from "@/types/collection";
-import { MOCK_COLLECTIONS, MOCK_FLYERS } from "@/_mock/collection-data";
+import { MOCK_COLLECTIONS } from "@/_mock/collection-data";
+import { getSharedFlyers } from "@/_mock/shared-data";
 import { MOCK_STORES } from "@/_mock/store-data";
 
 export default function CreateFlyer() {
@@ -84,8 +85,8 @@ export default function CreateFlyer() {
 				updatedAt: new Date(),
 			};
 
-			// Add the new flyer to mock data
-			MOCK_FLYERS.push(newFlyer);
+			// Add the new flyer to shared data
+			getSharedFlyers().push(newFlyer);
 
 			// Update collection flyer count
 			const collectionIndex = MOCK_COLLECTIONS.findIndex((c) => c.id === collection.id);

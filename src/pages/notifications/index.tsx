@@ -7,19 +7,17 @@ import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import { m } from "motion/react";
 import { varFade } from "@/components/animate/variants/fade";
-import type { Notification, NotificationFilters } from "@/types/notification";
+import type { Notification } from "@/types/notification";
 import {
 	NotificationStatus,
 	NOTIFICATION_TYPE_LABELS,
 	NOTIFICATION_STATUS_LABELS,
 	NOTIFICATION_TARGET_TYPE_LABELS,
 } from "@/types/notification";
-import { NotificationFiltersComponent } from "./components/notification-filters";
 import { DeleteNotificationDialog } from "./components/delete-notification-dialog";
 
 export default function Notifications() {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [filters, setFilters] = useState<NotificationFilters>({});
 	const [isLoading, setIsLoading] = useState(true);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
@@ -28,13 +26,6 @@ export default function Notifications() {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
 	const [isDeletingNotification, setIsDeletingNotification] = useState(false);
-	// Hide filters by default on mobile, show on desktop
-	const [showFilters, setShowFilters] = useState(() => {
-		if (typeof window !== "undefined") {
-			return window.innerWidth >= 768; // md breakpoint
-		}
-		return false; // Default for SSR
-	});
 	const { push } = useRouter();
 
 	// Fetch notifications with pagination
@@ -50,13 +41,6 @@ export default function Notifications() {
 				const params = new URLSearchParams();
 				params.set("page", page.toString());
 				params.set("limit", "20");
-
-				if (filters.search) params.set("search", filters.search);
-				if (filters.type) params.set("type", filters.type);
-				if (filters.status) params.set("status", filters.status);
-				if (filters.targetType) params.set("targetType", filters.targetType);
-				if (filters.dateFrom) params.set("dateFrom", filters.dateFrom.toISOString());
-				if (filters.dateTo) params.set("dateTo", filters.dateTo.toISOString());
 
 				const response = await fetch(`/api/notifications?${params.toString()}`);
 				const data = await response.json();
@@ -82,49 +66,9 @@ export default function Notifications() {
 				setIsLoadingMore(false);
 			}
 		},
-		[filters],
+		[],
 	);
 
-	// Handle notification actions
-	const handleCancelNotification = async (notification: Notification) => {
-		try {
-			const response = await fetch(`/api/notifications/${notification.id}/cancel`, {
-				method: "POST",
-			});
-			const data = await response.json();
-
-			if (data.status === 0) {
-				setNotifications((prev) =>
-					prev.map((n) => (n.id === notification.id ? { ...n, status: NotificationStatus.CANCELLED } : n)),
-				);
-				toast.success("Notification cancelled successfully");
-			} else {
-				toast.error(data.message || "Failed to cancel notification");
-			}
-		} catch (error) {
-			console.error("Error cancelling notification:", error);
-			toast.error("Failed to cancel notification");
-		}
-	};
-
-	const handleSendNow = async (notification: Notification) => {
-		try {
-			const response = await fetch(`/api/notifications/${notification.id}/send`, {
-				method: "POST",
-			});
-			const data = await response.json();
-
-			if (data.status === 0) {
-				setNotifications((prev) => prev.map((n) => (n.id === notification.id ? data.data : n)));
-				toast.success("Notification sent successfully");
-			} else {
-				toast.error(data.message || "Failed to send notification");
-			}
-		} catch (error) {
-			console.error("Error sending notification:", error);
-			toast.error("Failed to send notification");
-		}
-	};
 
 	const handleDeleteNotification = (notification: Notification) => {
 		setSelectedNotification(notification);
@@ -189,22 +133,14 @@ export default function Notifications() {
 		});
 	};
 
-	// Handle navigate to edit page
-	const handleEditNotification = (notification: Notification) => {
-		push(`/notifications/${notification.id}/edit`);
-	};
 
 	// Handle navigate to create page
 	const handleCreateNotification = () => {
 		push("/notifications/create");
 	};
 
-	// Reset filters
-	const handleResetFilters = () => {
-		setFilters({});
-	};
 
-	// Fetch notifications when filters change
+	// Fetch notifications on component mount
 	useEffect(() => {
 		setCurrentPage(1);
 		setHasMore(true);
@@ -221,15 +157,6 @@ export default function Notifications() {
 						<p className="text-muted-foreground">Manage push notifications and messaging</p>
 					</div>
 					<div className="flex items-center gap-2 ml-4">
-						{/* Filter Toggle Button (Mobile) */}
-						<Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="md:hidden">
-							<Icon
-								icon={showFilters ? "solar:eye-closed-outline" : "solar:filter-outline"}
-								size={16}
-								className="mr-2"
-							/>
-							{showFilters ? "Hide" : "Filters"}
-						</Button>
 						<Button onClick={handleCreateNotification}>
 							<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
 							<span className="hidden sm:inline">Create Notification</span>
@@ -239,12 +166,6 @@ export default function Notifications() {
 				</div>
 			</div>
 
-			{/* Filters */}
-			{showFilters && (
-				<div className="flex-shrink-0 px-6 pb-4">
-					<NotificationFiltersComponent filters={filters} onFiltersChange={setFilters} onReset={handleResetFilters} />
-				</div>
-			)}
 
 			{/* Notifications List */}
 			<div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
@@ -258,9 +179,7 @@ export default function Notifications() {
 						<Icon icon="solar:bell-outline" size={48} className="text-muted-foreground mb-4" />
 						<h3 className="text-lg font-semibold text-foreground mb-2">No notifications found</h3>
 						<p className="text-muted-foreground text-center mb-4">
-							{Object.keys(filters).length > 0
-								? "No notifications match your current filters."
-								: "No notifications have been created yet."}
+							No notifications have been created yet.
 						</p>
 						<Button onClick={handleCreateNotification}>
 							<Icon icon="solar:add-circle-bold" size={16} className="mr-2" />
@@ -277,7 +196,6 @@ export default function Notifications() {
 										<TableHead>Title</TableHead>
 										<TableHead>Target</TableHead>
 										<TableHead>Status</TableHead>
-										<TableHead>Scheduled</TableHead>
 										<TableHead>Created</TableHead>
 										<TableHead className="text-right">Actions</TableHead>
 									</TableRow>
@@ -320,68 +238,18 @@ export default function Notifications() {
 												</Badge>
 											</TableCell>
 											<TableCell>
-												<div className="text-sm text-muted-foreground">
-													{notification.scheduledFor ? formatDate(notification.scheduledFor) : "—"}
-												</div>
-											</TableCell>
-											<TableCell>
 												<div className="text-sm text-muted-foreground">{formatDate(notification.createdAt)}</div>
 											</TableCell>
 											<TableCell className="text-right">
-												<div className="flex items-center justify-end gap-2">
-													{/* Edit button for draft/scheduled */}
-													{(notification.status === NotificationStatus.DRAFT ||
-														notification.status === NotificationStatus.SCHEDULED) && (
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => handleEditNotification(notification)}
-															title="Edit notification"
-														>
-															<Icon icon="solar:pen-bold" size={16} />
-														</Button>
-													)}
-
-													{/* Send now button for scheduled */}
-													{notification.status === NotificationStatus.SCHEDULED && (
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => handleSendNow(notification)}
-															title="Send now"
-															className="text-green-600 hover:text-green-700"
-														>
-															<Icon icon="solar:play-bold" size={16} />
-														</Button>
-													)}
-
-													{/* Cancel button for scheduled */}
-													{notification.status === NotificationStatus.SCHEDULED && (
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => handleCancelNotification(notification)}
-															title="Cancel notification"
-															className="text-orange-600 hover:text-orange-700"
-														>
-															<Icon icon="solar:close-circle-bold" size={16} />
-														</Button>
-													)}
-
-													{/* Delete button for draft/scheduled */}
-													{(notification.status === NotificationStatus.DRAFT ||
-														notification.status === NotificationStatus.SCHEDULED) && (
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => handleDeleteNotification(notification)}
-															title="Delete notification"
-															className="text-red-600 hover:text-red-700"
-														>
-															<Icon icon="solar:trash-bin-trash-bold" size={16} />
-														</Button>
-													)}
-												</div>
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => handleDeleteNotification(notification)}
+													title="Delete notification"
+													className="text-red-600 hover:text-red-700"
+												>
+													<Icon icon="solar:trash-bin-trash-bold" size={16} />
+												</Button>
 											</TableCell>
 										</m.tr>
 									))}

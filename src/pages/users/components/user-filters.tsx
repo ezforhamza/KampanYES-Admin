@@ -19,7 +19,7 @@ export function UserFiltersComponent({ filters, onFiltersChange, onReset }: User
 				<CardTitle className="text-lg">Filter Users</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 					{/* Search Input */}
 					<Input
 						placeholder="Search by first name, last name or email..."
@@ -53,12 +53,12 @@ export function UserFiltersComponent({ filters, onFiltersChange, onReset }: User
 
 
 					{/* City Filter */}
-					<Input
+					{/* <Input
 						placeholder="City..."
 						value={filters.city || ""}
 						onChange={(e) => onFiltersChange({ ...filters, city: e.target.value })}
 						className="max-w-sm"
-					/>
+					/> */}
 
 					{/* Reset Button */}
 					<Button variant="outline" onClick={onReset}>

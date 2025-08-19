@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "@/routes/hooks";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { Icon } from "@/components/icon";
 import { m } from "motion/react";
@@ -149,14 +148,9 @@ export default function Stores() {
 			<StoreFiltersComponent filters={filters} onFiltersChange={setFilters} onReset={() => setFilters({})} />
 
 			{/* Stores Table */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg">Stores ({filteredStores.length})</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="rounded-md border">
-						<div className="max-h-[600px] overflow-y-auto">
-							<Table>
+			<div className="rounded-md border">
+				<div className="max-h-[600px] overflow-y-auto">
+					<Table>
 								<TableHeader>
 									<TableRow>
 										<TableHead>Store</TableHead>
@@ -262,21 +256,19 @@ export default function Stores() {
 									)}
 								</TableBody>
 							</Table>
-						</div>
+				</div>
 
-						{!isLoadingStores && filteredStores.length === 0 && (
-							<div className="text-center py-12">
-								<Icon icon="solar:shop-bold-duotone" size={48} className="text-gray-300 mx-auto mb-4" />
-								<h3 className="text-lg font-medium text-gray-900 mb-2">No stores found</h3>
-								<p className="text-gray-500 mb-4">No stores match your current filters.</p>
-								<Button variant="outline" onClick={() => setFilters({})}>
-									Clear filters
-								</Button>
-							</div>
-						)}
+				{!isLoadingStores && filteredStores.length === 0 && (
+					<div className="text-center py-12">
+						<Icon icon="solar:shop-bold-duotone" size={48} className="text-gray-300 mx-auto mb-4" />
+						<h3 className="text-lg font-medium text-gray-900 mb-2">No stores found</h3>
+						<p className="text-gray-500 mb-4">No stores match your current filters.</p>
+						<Button variant="outline" onClick={() => setFilters({})}>
+							Clear filters
+						</Button>
 					</div>
-				</CardContent>
-			</Card>
+				)}
+			</div>
 
 			{/* Delete Store Dialog */}
 			<DeleteStoreDialog

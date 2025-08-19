@@ -22,8 +22,6 @@ export default function CreateCollection() {
 			// Create collection payload
 			const collectionPayload = {
 				name: data.name,
-				categoryId: data.categoryId, // Use categoryId, not category
-				storeId: data.storeId,
 				status: data.status,
 			};
 

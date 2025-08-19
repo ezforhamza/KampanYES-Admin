@@ -7,7 +7,6 @@ export const MOCK_COLLECTIONS: Collection[] = [
 	{
 		id: "coll-1",
 		name: "Weekly Fresh Deals",
-		categoryId: "cat-1", // Supermarkets
 		storeId: "1", // Albert Heijn
 		thumbnailFlyerId: "flyer-1",
 		flyersCount: 5,
@@ -18,7 +17,6 @@ export const MOCK_COLLECTIONS: Collection[] = [
 	{
 		id: "coll-2",
 		name: "Tech Sale Extravaganza",
-		categoryId: "cat-2", // Electronics
 		storeId: "2", // MediaMarkt
 		thumbnailFlyerId: "flyer-6",
 		flyersCount: 3,
@@ -29,7 +27,6 @@ export const MOCK_COLLECTIONS: Collection[] = [
 	{
 		id: "coll-3",
 		name: "Summer Fashion Collection",
-		categoryId: "cat-3", // Fashion
 		storeId: "3", // H&M
 		thumbnailFlyerId: "flyer-9",
 		flyersCount: 2,
@@ -40,7 +37,6 @@ export const MOCK_COLLECTIONS: Collection[] = [
 	{
 		id: "coll-4",
 		name: "Garden & DIY Essentials",
-		categoryId: "cat-4", // Garden & DIY
 		storeId: "4", // REWE
 		thumbnailFlyerId: "flyer-11",
 		flyersCount: 2,
@@ -51,7 +47,6 @@ export const MOCK_COLLECTIONS: Collection[] = [
 	{
 		id: "coll-5",
 		name: "Beauty & Wellness",
-		categoryId: "cat-7", // Beauty
 		storeId: "5", // Etos
 		thumbnailFlyerId: "flyer-13",
 		flyersCount: 2,

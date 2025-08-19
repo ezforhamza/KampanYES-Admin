@@ -1,16 +1,13 @@
 import { BasicStatus } from "./enum";
-import { StoreCategory } from "./store";
 
 /**
  * Collection interface for KampanYES
  * Collections belong to stores and contain multiple flyers
+ * Collections inherit category from their parent store
  */
 export interface Collection {
 	id: string;
 	name: string;
-	categoryId: string; // Reference to Category entity
-	/** @deprecated Use categoryId instead */
-	category?: StoreCategory;
 	storeId: string;
 	thumbnailFlyerId?: string; // First flyer or user-selected thumbnail
 	flyersCount: number;
@@ -24,9 +21,6 @@ export interface Collection {
  */
 export interface CreateCollectionRequest {
 	name: string;
-	categoryId: string; // Reference to Category entity
-	/** @deprecated Use categoryId instead */
-	category?: StoreCategory;
 	storeId: string;
 	status: BasicStatus;
 }
@@ -35,9 +29,6 @@ export interface CreateCollectionRequest {
  * Collection filters for search and filtering
  */
 export interface CollectionFilters {
-	categoryId?: string; // Reference to Category entity
-	/** @deprecated Use categoryId instead */
-	category?: StoreCategory;
 	storeId?: string;
 	status?: BasicStatus;
 	search?: string;

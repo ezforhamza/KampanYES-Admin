@@ -5,7 +5,6 @@ import { Textarea } from "@/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Label } from "@/ui/label";
-import { Switch } from "@/ui/switch";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import type { Notification } from "@/types/notification";
@@ -14,7 +13,6 @@ import {
 	NotificationTargetType,
 	NOTIFICATION_TARGET_TYPE_LABELS,
 } from "@/types/notification";
-import { MOCK_STORES } from "@/_mock/store-data";
 import { MOCK_USERS } from "@/_mock/user-data";
 
 interface NotificationFormProps {
@@ -32,9 +30,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 		message: notification?.message || "",
 		targetType: notification?.target.type || NotificationTargetType.ALL_USERS,
 		targetUserIds: notification?.target.userIds || [],
-		targetStoreId: notification?.target.storeId || "",
-		scheduleEnabled: !!notification?.scheduledFor,
-		scheduledDate: notification?.scheduledFor ? new Date(notification.scheduledFor).toISOString().slice(0, 16) : "",
 		searchTerm: "", // For user search
 	});
 
@@ -50,9 +45,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 				message: notification.message,
 				targetType: notification.target.type,
 				targetUserIds: notification.target.userIds || [],
-				targetStoreId: notification.target.storeId || "",
-				scheduleEnabled: !!notification.scheduledFor,
-				scheduledDate: notification.scheduledFor ? new Date(notification.scheduledFor).toISOString().slice(0, 16) : "",
 				searchTerm: "",
 			});
 			setSelectedUsers(notification.target.userIds || []);
@@ -82,22 +74,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 			newErrors.targetUsers = "Please select at least one user";
 		}
 
-		if (formData.targetType === NotificationTargetType.STORE_FOLLOWERS && !formData.targetStoreId) {
-			newErrors.targetStore = "Please select a store";
-		}
-
-		if (formData.scheduleEnabled && !formData.scheduledDate) {
-			newErrors.scheduledDate = "Please select a date and time";
-		}
-
-		if (formData.scheduleEnabled && formData.scheduledDate) {
-			const scheduledDate = new Date(formData.scheduledDate);
-			const now = new Date();
-			if (scheduledDate <= now) {
-				newErrors.scheduledDate = "Scheduled date must be in the future";
-			}
-		}
-
 		setErrors(newErrors);
 		return Object.keys(newErrors).length === 0;
 	};
@@ -116,9 +92,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 				...(formData.targetType === NotificationTargetType.CUSTOM_USERS && {
 					userIds: selectedUsers,
 				}),
-				...(formData.targetType === NotificationTargetType.STORE_FOLLOWERS && {
-					storeId: formData.targetStoreId,
-				}),
 			};
 
 			const submitData = {
@@ -126,10 +99,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 				title: formData.title.trim(),
 				message: formData.message.trim(),
 				target,
-				...(formData.scheduleEnabled &&
-					formData.scheduledDate && {
-						scheduledFor: new Date(formData.scheduledDate),
-					}),
 			};
 
 			await onSubmit(submitData);
@@ -207,7 +176,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 								onValueChange={(value) => {
 									updateField("targetType", value);
 									setSelectedUsers([]);
-									updateField("targetStoreId", "");
 									updateField("searchTerm", ""); // Clear search when changing target type
 								}}
 							>
@@ -298,61 +266,6 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 								</div>
 							)}
 
-							{/* Store Selection */}
-							{formData.targetType === NotificationTargetType.STORE_FOLLOWERS && (
-								<div className="space-y-2">
-									<Label>Select Store</Label>
-									<Select value={formData.targetStoreId} onValueChange={(value) => updateField("targetStoreId", value)}>
-										<SelectTrigger className={errors.targetStore ? "border-destructive" : ""}>
-											<SelectValue placeholder="Choose a store..." />
-										</SelectTrigger>
-										<SelectContent>
-											{MOCK_STORES.map((store) => (
-												<SelectItem key={store.id} value={store.id}>
-													{store.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{errors.targetStore && <p className="text-sm text-destructive">{errors.targetStore}</p>}
-								</div>
-							)}
-						</div>
-
-						{/* Scheduling */}
-						<div className="space-y-4">
-							<div className="flex items-center space-x-2">
-								<Switch
-									id="schedule"
-									checked={formData.scheduleEnabled}
-									onCheckedChange={(checked) => {
-										updateField("scheduleEnabled", checked);
-										if (!checked) {
-											updateField("scheduledDate", "");
-										}
-									}}
-								/>
-								<Label htmlFor="schedule" className="text-foreground">
-									Schedule for later
-								</Label>
-							</div>
-
-							{formData.scheduleEnabled && (
-								<div className="space-y-2">
-									<Label htmlFor="scheduledDate" className="text-foreground">
-										Scheduled Date & Time
-									</Label>
-									<Input
-										id="scheduledDate"
-										type="datetime-local"
-										value={formData.scheduledDate}
-										onChange={(e) => updateField("scheduledDate", e.target.value)}
-										className={`${errors.scheduledDate ? "border-destructive" : ""} [color-scheme:light] dark:[color-scheme:dark]`}
-										min={new Date().toISOString().slice(0, 16)}
-									/>
-									{errors.scheduledDate && <p className="text-sm text-destructive">{errors.scheduledDate}</p>}
-								</div>
-							)}
 						</div>
 
 						{/* Form Actions */}
@@ -369,16 +282,10 @@ export function NotificationForm({ notification, onSubmit, onCancel, isLoading, 
 								) : (
 									<>
 										<Icon
-											icon={formData.scheduleEnabled ? "solar:calendar-bold" : "solar:play-bold"}
+											icon="solar:play-bold"
 											className="mr-2 h-4 w-4"
 										/>
-										{formData.scheduleEnabled
-											? mode === "create"
-												? "Schedule Notification"
-												: "Update Schedule"
-											: mode === "create"
-												? "Send Now"
-												: "Update & Send"}
+										{mode === "create" ? "Send Now" : "Update & Send"}
 									</>
 								)}
 							</Button>

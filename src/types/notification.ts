@@ -15,13 +15,11 @@ export enum NotificationStatus {
 export enum NotificationTargetType {
 	ALL_USERS = "all_users",
 	CUSTOM_USERS = "custom_users",
-	STORE_FOLLOWERS = "store_followers",
 }
 
 export interface NotificationTarget {
 	type: NotificationTargetType;
 	userIds?: string[]; // For custom user selection
-	storeId?: string; // For store followers
 }
 
 export interface Notification {
@@ -37,8 +35,7 @@ export interface Notification {
 	relatedCollectionId?: string;
 	relatedFlyerId?: string;
 
-	// Scheduling
-	scheduledFor?: Date; // If null, send immediately
+	// Scheduling (removed - always send immediately)
 	sentAt?: Date;
 
 	// Metadata
@@ -58,15 +55,13 @@ export interface CreateNotificationRequest {
 	title: string;
 	message: string;
 	target: NotificationTarget;
-	scheduledFor?: Date;
 }
 
-// For updating notifications (only draft/scheduled can be updated)
+// For updating notifications (only draft can be updated)
 export interface UpdateNotificationRequest {
 	title?: string;
 	message?: string;
 	target?: NotificationTarget;
-	scheduledFor?: Date;
 }
 
 // For filtering notifications
@@ -96,6 +91,5 @@ export const NOTIFICATION_STATUS_LABELS: Record<NotificationStatus, string> = {
 
 export const NOTIFICATION_TARGET_TYPE_LABELS: Record<NotificationTargetType, string> = {
 	[NotificationTargetType.ALL_USERS]: "All Users",
-	[NotificationTargetType.CUSTOM_USERS]: "Custom Users",
-	[NotificationTargetType.STORE_FOLLOWERS]: "Store Followers",
+	[NotificationTargetType.CUSTOM_USERS]: "Selected Users",
 };

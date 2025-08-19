@@ -19,17 +19,12 @@ export const frontendDashboardRoutes: RouteObject[] = [
 			{ path: "create", element: Component("/pages/stores/create") },
 			{ path: ":id", element: Component("/pages/stores/details") },
 			{ path: ":id/edit", element: Component("/pages/stores/edit") },
-		],
-	},
-	{
-		path: "collections",
-		children: [
-			{ index: true, element: Component("/pages/collections") },
-			{ path: "create", element: Component("/pages/collections/create") },
-			{ path: ":id", element: Component("/pages/collections/details") },
-			{ path: ":id/edit", element: Component("/pages/collections/edit") },
-			{ path: ":id/flyers/create", element: Component("/pages/collections/flyers/create") },
-			{ path: ":id/flyers/:flyerId/edit", element: Component("/pages/collections/flyers/edit") },
+			// Store-specific collection routes
+			{ path: ":id/collections/create", element: Component("/pages/stores/collections/create") },
+			{ path: ":id/collections/:collectionId", element: Component("/pages/stores/collections/details") },
+			{ path: ":id/collections/:collectionId/edit", element: Component("/pages/stores/collections/edit") },
+			{ path: ":id/collections/:collectionId/flyers/create", element: Component("/pages/stores/collections/flyers/create") },
+			{ path: ":id/collections/:collectionId/flyers/:flyerId/edit", element: Component("/pages/stores/collections/flyers/edit") },
 		],
 	},
 	{

@@ -2,7 +2,6 @@ import { http, HttpResponse } from "msw";
 import { faker } from "@faker-js/faker";
 import { MOCK_COLLECTIONS, getActiveFlyers, isFlyerActive } from "../collection-data";
 import { MOCK_STORES } from "../store-data";
-import { MOCK_CATEGORIES } from "../category-data";
 import { getPaginationParams, paginateArray } from "../utils";
 import {
 	getSharedFlyers,
@@ -42,7 +41,6 @@ const getStoreName = (storeId: string): string => {
 export const getCollections = http.get(CollectionApi.LIST, ({ request }) => {
 	const url = new URL(request.url);
 	const search = url.searchParams.get("search")?.toLowerCase();
-	const category = url.searchParams.get("category");
 	const storeId = url.searchParams.get("storeId");
 	const activeOnly = url.searchParams.get("activeOnly") === "true";
 
@@ -54,12 +52,6 @@ export const getCollections = http.get(CollectionApi.LIST, ({ request }) => {
 	// Apply filters
 	if (search) {
 		filteredCollections = filteredCollections.filter((collection) => collection.name.toLowerCase().includes(search));
-	}
-
-	if (category) {
-		filteredCollections = filteredCollections.filter(
-			(collection) => collection.categoryId === category || collection.category === category,
-		);
 	}
 
 	if (storeId) {
@@ -79,13 +71,11 @@ export const getCollections = http.get(CollectionApi.LIST, ({ request }) => {
 		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 	);
 
-	// Add store information, category information, and flyer counts
+	// Add store information and flyer counts
 	const enrichedCollections = sortedCollections.map((collection) => {
-		const category = MOCK_CATEGORIES.find((cat) => cat.id === collection.categoryId);
 		return {
 			...collection,
 			storeName: getStoreName(collection.storeId),
-			categoryName: category?.name || "Unknown Category",
 			activeFlyers: getActiveFlyers(collection.id).length,
 		};
 	});
@@ -124,16 +114,12 @@ export const createCollection = http.post(CollectionApi.CREATE, async ({ request
 		// Continue with collection creation even if notification fails
 	}
 
-	// Add category name lookup like other handlers
-	const category = MOCK_CATEGORIES.find((cat) => cat.id === newCollection.categoryId);
-
 	return HttpResponse.json({
 		status: 0,
 		message: "Collection created successfully",
 		data: {
 			...newCollection,
 			storeName: getStoreName(newCollection.storeId),
-			categoryName: category?.name || "Unknown Category",
 			activeFlyers: 0,
 		},
 	});

@@ -8,9 +8,7 @@ import { Icon } from "@/components/icon";
 import { createCollectionSchema, type CreateCollectionFormData } from "../schemas/collection-schema";
 import { BasicStatus } from "@/types/enum";
 import type { Collection } from "@/types/collection";
-import type { Category } from "@/types/category";
-import type { Store } from "@/types/store";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface CreateCollectionFormProps {
 	onSubmit: (data: CreateCollectionFormData) => void;
@@ -18,6 +16,7 @@ interface CreateCollectionFormProps {
 	isLoading?: boolean;
 	editMode?: boolean;
 	initialCollection?: Collection;
+	storeName?: string; // Display the store name for context
 }
 
 export function CreateCollectionForm({
@@ -26,26 +25,19 @@ export function CreateCollectionForm({
 	isLoading,
 	editMode = false,
 	initialCollection,
+	storeName,
 }: CreateCollectionFormProps) {
-	const [categories, setCategories] = useState<Category[]>([]);
-	const [categoriesLoading, setCategoriesLoading] = useState(true);
-	const [stores, setStores] = useState<Store[]>([]);
-	const [storesLoading, setStoresLoading] = useState(true);
 
 	const getDefaultValues = () => {
 		if (editMode && initialCollection) {
 			return {
 				name: initialCollection.name,
-				categoryId: initialCollection.categoryId,
-				storeId: initialCollection.storeId,
 				status: initialCollection.status,
 			};
 		}
 
 		return {
 			name: "",
-			categoryId: "",
-			storeId: "",
 			status: BasicStatus.ENABLE,
 		};
 	};
@@ -54,36 +46,6 @@ export function CreateCollectionForm({
 		resolver: zodResolver(createCollectionSchema),
 		defaultValues: getDefaultValues(),
 	});
-
-	// Fetch categories and stores
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				// Fetch categories
-				setCategoriesLoading(true);
-				const categoriesResponse = await fetch("/api/categories");
-				const categoriesData = await categoriesResponse.json();
-				if (categoriesData.status === 0) {
-					setCategories(categoriesData.data.list.filter((cat: Category) => cat.status === BasicStatus.ENABLE));
-				}
-
-				// Fetch stores
-				setStoresLoading(true);
-				const storesResponse = await fetch("/api/stores");
-				const storesData = await storesResponse.json();
-				if (storesData.status === 0) {
-					setStores(storesData.data.list.filter((store: Store) => store.status === BasicStatus.ENABLE));
-				}
-			} catch (error) {
-				console.error("Error fetching data:", error);
-			} finally {
-				setCategoriesLoading(false);
-				setStoresLoading(false);
-			}
-		};
-
-		fetchData();
-	}, []);
 
 	// Reset form when collection changes (for edit mode)
 	useEffect(() => {
@@ -101,6 +63,19 @@ export function CreateCollectionForm({
 			<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
 				{/* Form Content */}
 				<div className="space-y-6">
+					{/* Store Context Display */}
+					{storeName && (
+						<div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+							<div className="flex items-center gap-3">
+								<Icon icon="solar:shop-bold" size={20} className="text-blue-600" />
+								<div>
+									<p className="text-sm font-medium text-blue-900 dark:text-blue-100">Creating collection for</p>
+									<p className="text-lg font-semibold text-blue-900 dark:text-blue-100">{storeName}</p>
+								</div>
+							</div>
+						</div>
+					)}
+
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						{/* Collection Name */}
 						<FormField
@@ -112,88 +87,8 @@ export function CreateCollectionForm({
 									<FormControl>
 										<Input placeholder="e.g., Weekly Deals" className="h-10" {...field} />
 									</FormControl>
-									<div className="min-h-[1.25rem]">
-										<FormMessage />
-									</div>
-								</FormItem>
-							)}
-						/>
-
-						{/* Store Selection */}
-						<FormField
-							control={form.control}
-							name="storeId"
-							render={({ field }) => (
-								<FormItem className="space-y-2">
-									<FormLabel className="text-sm font-medium text-text-primary">Store *</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value || ""}>
-										<FormControl>
-											<SelectTrigger className="h-10">
-												<SelectValue placeholder="Select store" />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{storesLoading ? (
-												<div className="px-2 py-1.5 text-sm text-muted-foreground">
-													<div className="flex items-center gap-2">
-														<Icon icon="solar:refresh-bold" className="w-4 h-4 animate-spin" />
-														Loading stores...
-													</div>
-												</div>
-											) : stores.length === 0 ? (
-												<div className="px-2 py-1.5 text-sm text-muted-foreground">No stores available</div>
-											) : (
-												stores.map((store) => (
-													<SelectItem key={store.id} value={store.id}>
-														<div className="flex items-center gap-2">
-															{store.logo && (
-																<img src={store.logo} alt={store.name} className="w-4 h-4 rounded object-cover" />
-															)}
-															{store.name}
-														</div>
-													</SelectItem>
-												))
-											)}
-										</SelectContent>
-									</Select>
-									<div className="min-h-[1.25rem]">
-										<FormMessage />
-									</div>
-								</FormItem>
-							)}
-						/>
-					</div>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						{/* Category */}
-						<FormField
-							control={form.control}
-							name="categoryId"
-							render={({ field }) => (
-								<FormItem className="space-y-2">
-									<FormLabel className="text-sm font-medium text-text-primary">Category *</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value || ""}>
-										<FormControl>
-											<SelectTrigger className="h-10">
-												<SelectValue placeholder="Select category" />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{categoriesLoading ? (
-												<div className="p-2 text-center text-sm text-gray-500">Loading categories...</div>
-											) : categories.length === 0 ? (
-												<div className="p-2 text-center text-sm text-gray-500">No categories available</div>
-											) : (
-												categories.map((category) => (
-													<SelectItem key={category.id} value={category.id}>
-														{category.name}
-													</SelectItem>
-												))
-											)}
-										</SelectContent>
-									</Select>
 									<FormDescription className="text-xs text-muted-foreground">
-										Choose the main category that best represents this collection
+										Choose a descriptive name for this collection
 									</FormDescription>
 									<div className="min-h-[1.25rem]">
 										<FormMessage />

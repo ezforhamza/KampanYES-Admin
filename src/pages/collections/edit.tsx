@@ -61,8 +61,6 @@ export default function EditCollection() {
 			// Create update payload
 			const updatePayload = {
 				name: data.name,
-				categoryId: data.categoryId, // Use categoryId, not category
-				storeId: data.storeId,
 				status: data.status,
 			};
 

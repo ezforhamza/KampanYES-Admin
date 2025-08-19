@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
-import { MOCK_FLYERS, MOCK_COLLECTIONS } from "@/_mock/collection-data";
+import { MOCK_COLLECTIONS } from "@/_mock/collection-data";
+import { getSharedFlyers } from "@/_mock/shared-data";
 import { MOCK_STORES } from "@/_mock/store-data";
 import type { Flyer } from "@/types/flyer";
 import type { Collection } from "@/types/collection";
@@ -34,7 +35,7 @@ export default function FlyerDetails() {
 			// Simulate API call
 			await new Promise((resolve) => setTimeout(resolve, 300));
 
-			const foundFlyer = MOCK_FLYERS.find((f) => f.id === id);
+			const foundFlyer = getSharedFlyers().find((f) => f.id === id);
 			if (!foundFlyer) {
 				toast.error("Flyer not found");
 				push("/collections");
@@ -341,15 +342,6 @@ export default function FlyerDetails() {
 									<p className="text-text-secondary text-xs sm:text-sm">{collection.flyersCount} flyers in this collection</p>
 								</div>
 
-								<div>
-									<p className="text-sm font-medium text-text-secondary mb-1">Category</p>
-									<Badge variant="outline" className="text-xs">
-										{collection.category
-											?.replace("_", " ")
-											.toLowerCase()
-											.replace(/\b\w/g, (l) => l.toUpperCase())}
-									</Badge>
-								</div>
 
 								<Button
 									variant="ghost"

@@ -30,7 +30,7 @@ export const createAutoNotification = (
 	title: string,
 	message: string,
 	targetType: NotificationTargetType = NotificationTargetType.ALL_USERS,
-	entityId?: string,
+	_entityId?: string,
 ): Notification => {
 	const newNotification: Notification = {
 		id: faker.string.uuid(),
@@ -39,10 +39,10 @@ export const createAutoNotification = (
 		message,
 		target: {
 			type: targetType,
-			...(targetType === NotificationTargetType.STORE_FOLLOWERS &&
-				entityId && {
-					storeId: entityId,
-				}),
+			// ...(targetType === NotificationTargetType.STORE_FOLLOWERS &&
+			// 	entityId && {
+			// 		storeId: entityId,
+			// 	}),
 		},
 		status: NotificationStatus.SENT,
 		createdAt: new Date(),
@@ -51,10 +51,10 @@ export const createAutoNotification = (
 		createdBy: "system", // Auto-generated
 		totalTargetUsers: calculateTargetUserCount({
 			type: targetType,
-			...(targetType === NotificationTargetType.STORE_FOLLOWERS &&
-				entityId && {
-					storeId: entityId,
-				}),
+			// ...(targetType === NotificationTargetType.STORE_FOLLOWERS &&
+			// 	entityId && {
+			// 		storeId: entityId,
+			// 	}),
 		}),
 		deliveredCount: 0,
 		readCount: 0,
@@ -86,7 +86,7 @@ export const generateNewCollectionNotification = (collectionName: string, storeN
 		NotificationType.NEW_COLLECTION,
 		`New Collection: ${collectionName}`,
 		`${storeName} just launched a new collection "${collectionName}". Discover the latest products now!`,
-		NotificationTargetType.STORE_FOLLOWERS,
+		NotificationTargetType.ALL_USERS,
 		storeId,
 	);
 
@@ -104,7 +104,7 @@ export const generateDiscountNotification = (
 		NotificationType.DISCOUNT_ADDED,
 		`🔥 ${discountPercent}% OFF - ${flyerTitle}`,
 		`Don't miss out! ${storeName} is offering ${discountPercent}% discount on "${flyerTitle}". Limited time offer!`,
-		NotificationTargetType.STORE_FOLLOWERS,
+		NotificationTargetType.ALL_USERS,
 		storeId,
 	);
 
@@ -185,20 +185,19 @@ export const createNotification = http.post(NotificationApi.CREATE, async ({ req
 	const newNotification: Notification = {
 		id: faker.string.uuid(),
 		...notificationData,
-		status: notificationData.scheduledFor ? NotificationStatus.SCHEDULED : NotificationStatus.DRAFT,
+		status: NotificationStatus.SENT, // Always send immediately
 		createdAt: new Date(),
 		updatedAt: new Date(),
+		sentAt: new Date(),
 		createdBy: "admin-1", // In real app, this would come from auth context
 		totalTargetUsers: calculateTargetUserCount(notificationData.target),
+		deliveredCount: 0,
+		readCount: 0,
 	};
 
-	// If scheduled for immediate delivery, mark as sent
-	if (!notificationData.scheduledFor) {
-		newNotification.status = NotificationStatus.SENT;
-		newNotification.sentAt = new Date();
-		newNotification.deliveredCount = newNotification.totalTargetUsers;
-		newNotification.readCount = Math.floor((newNotification.totalTargetUsers || 0) * 0.7); // 70% read rate
-	}
+	// Set delivery metrics
+	newNotification.deliveredCount = newNotification.totalTargetUsers;
+	newNotification.readCount = Math.floor((newNotification.totalTargetUsers || 0) * 0.7); // 70% read rate
 
 	mockNotifications.unshift(newNotification);
 
@@ -228,23 +227,11 @@ export const updateNotification = http.put(NotificationApi.UPDATE, async ({ requ
 
 	const notification = mockNotifications[notificationIndex];
 
-	// Only allow updates for draft and scheduled notifications
-	if (notification.status !== NotificationStatus.DRAFT && notification.status !== NotificationStatus.SCHEDULED) {
-		return HttpResponse.json(
-			{
-				status: 1,
-				message: "Cannot update notification that has already been sent or cancelled",
-			},
-			{ status: 400 },
-		);
-	}
-
 	// Update notification
 	mockNotifications[notificationIndex] = {
 		...notification,
 		...updateData,
 		updatedAt: new Date(),
-		status: updateData.scheduledFor ? NotificationStatus.SCHEDULED : NotificationStatus.DRAFT,
 		totalTargetUsers: updateData.target ? calculateTargetUserCount(updateData.target) : notification.totalTargetUsers,
 	};
 
@@ -277,7 +264,7 @@ export const getNotificationById = http.get(NotificationApi.GET_BY_ID, ({ params
 	});
 });
 
-// Delete notification (only draft/scheduled can be deleted)
+// Delete notification (can delete any notification from list)
 export const deleteNotification = http.delete(NotificationApi.DELETE, ({ params }) => {
 	const id = params.id as string;
 
@@ -290,19 +277,6 @@ export const deleteNotification = http.delete(NotificationApi.DELETE, ({ params 
 				message: "Notification not found",
 			},
 			{ status: 404 },
-		);
-	}
-
-	const notification = mockNotifications[notificationIndex];
-
-	// Only allow deletion for draft and scheduled notifications
-	if (notification.status !== NotificationStatus.DRAFT && notification.status !== NotificationStatus.SCHEDULED) {
-		return HttpResponse.json(
-			{
-				status: 1,
-				message: "Cannot delete notification that has already been sent or cancelled",
-			},
-			{ status: 400 },
 		);
 	}
 

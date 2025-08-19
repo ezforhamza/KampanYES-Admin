@@ -5,18 +5,70 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Icon } from "@/components/icon";
 import { toast } from "sonner";
 import type { Store } from "@/types/store";
+import type { Collection } from "@/types/collection";
 import { Badge } from "@/ui/badge";
 import { StatusBadge } from "./components/store-badges";
 import { DeleteStoreDialog } from "./components/delete-store-dialog";
 import { StoreMapDisplay } from "./components/store-map-display";
+import { getSharedFlyers } from "@/_mock/shared-data";
 
 export default function StoreDetails() {
 	const [store, setStore] = useState<Store | null>(null);
+	const [collections, setCollections] = useState<Collection[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isLoadingCollections, setIsLoadingCollections] = useState(true);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const { push, back } = useRouter();
 	const { id } = useParams();
+
+	// Helper function to get collection thumbnail image
+	const getCollectionThumbnail = (collection: Collection): string => {
+		const sharedFlyers = getSharedFlyers();
+		
+		// If collection has a specific thumbnail flyer set
+		if (collection.thumbnailFlyerId) {
+			const thumbnailFlyer = sharedFlyers.find(f => f.id === collection.thumbnailFlyerId);
+			if (thumbnailFlyer?.image) {
+				return thumbnailFlyer.image;
+			}
+		}
+
+		// Default: get the first flyer's image from this collection
+		const firstFlyer = sharedFlyers.find(f => f.collectionId === collection.id);
+		if (firstFlyer?.image) {
+			return firstFlyer.image;
+		}
+
+		// Fallback: default placeholder image
+		return "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center";
+	};
+
+	// Load collections for this store
+	const loadCollections = async () => {
+		if (!id) return;
+		
+		setIsLoadingCollections(true);
+		try {
+			const params = new URLSearchParams();
+			params.set("storeId", id);
+			params.set("page", "1");
+			params.set("limit", "100");
+
+			const response = await fetch(`/api/collections?${params.toString()}`);
+			const result = await response.json();
+
+			if (result.status === 0) {
+				setCollections(result.data.list);
+			} else {
+				console.error("Failed to load collections");
+			}
+		} catch (error) {
+			console.error("Failed to load collections:", error);
+		} finally {
+			setIsLoadingCollections(false);
+		}
+	};
 
 	useEffect(() => {
 		const loadStore = async () => {
@@ -28,6 +80,8 @@ export default function StoreDetails() {
 
 				if (result.status === 0) {
 					setStore(result.data);
+					// Load collections after store is loaded
+					loadCollections();
 				} else {
 					toast.error("Store not found", {
 						description: "The store you're looking for doesn't exist.",
@@ -318,6 +372,104 @@ export default function StoreDetails() {
 					</Card>
 				</div>
 			</div>
+
+			{/* Collections Section */}
+			<Card>
+				<CardHeader>
+					<div className="flex items-center justify-between">
+						<CardTitle className="text-lg flex items-center gap-2">
+							<Icon icon="solar:folder-bold" size={20} />
+							Collections ({collections.length})
+						</CardTitle>
+						<Button 
+							onClick={() => push(`/stores/${store.id}/collections/create`)}
+							size="sm"
+						>
+							<Icon icon="solar:add-circle-bold" size={16} className="mr-2" />
+							Create Collection
+						</Button>
+					</div>
+				</CardHeader>
+				<CardContent>
+					{isLoadingCollections ? (
+						<div className="flex items-center justify-center py-8">
+							<Icon icon="solar:refresh-bold" className="mr-2 h-5 w-5 animate-spin text-primary" />
+							<span className="text-muted-foreground">Loading collections...</span>
+						</div>
+					) : collections.length === 0 ? (
+						<div className="text-center py-8">
+							<Icon icon="solar:folder-bold-duotone" size={48} className="text-gray-400 mx-auto mb-4" />
+							<h3 className="text-lg font-medium text-gray-900 mb-2">No Collections Yet</h3>
+							<p className="text-gray-500 mb-4">Start organizing your flyers by creating your first collection.</p>
+							<Button onClick={() => push(`/stores/${store.id}/collections/create`)}>
+								<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
+								Create First Collection
+							</Button>
+						</div>
+					) : (
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+							{collections.map((collection) => (
+								<div
+									key={collection.id}
+									className="group border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+									onClick={() => push(`/stores/${store.id}/collections/${collection.id}`)}
+								>
+									{/* Collection Thumbnail */}
+									<div className="aspect-video bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+										<img
+											src={getCollectionThumbnail(collection)}
+											alt={collection.name}
+											className="w-full h-full object-cover"
+										/>
+										
+										{/* Status Badge */}
+										<div className="absolute top-2 left-2">
+											<span className={`px-2 py-1 text-xs rounded-full font-medium ${
+												collection.status === 1 
+													? 'bg-green-500 text-white' 
+													: 'bg-red-500 text-white'
+											}`}>
+												{collection.status === 1 ? 'Active' : 'Inactive'}
+											</span>
+										</div>
+
+										{/* Flyer Count Badge */}
+										<div className="absolute top-2 right-2">
+											<span className="bg-black/70 text-white px-2 py-1 text-xs rounded-full font-medium">
+												{collection.flyersCount} flyers
+											</span>
+										</div>
+									</div>
+
+									{/* Collection Info */}
+									<div className="p-4">
+										<div className="flex items-start justify-between mb-3">
+											<h4 className="font-semibold text-text-primary line-clamp-2 flex-1">{collection.name}</h4>
+											<div className="flex items-center gap-1 ml-2">
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={(e) => {
+														e.stopPropagation();
+														push(`/stores/${store.id}/collections/${collection.id}/edit`);
+													}}
+													className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+												>
+													<Icon icon="solar:pen-bold" size={14} />
+												</Button>
+											</div>
+										</div>
+										
+										<div className="text-xs text-gray-400">
+											Updated: {new Date(collection.updatedAt).toLocaleDateString()}
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
 			{/* Delete Store Dialog */}
 			<DeleteStoreDialog
