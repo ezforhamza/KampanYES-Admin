@@ -6,6 +6,7 @@ import { Icon } from "@/components/icon";
 import { CategoryForm } from "./components/category-form";
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/types/category";
 import { toast } from "sonner";
+import categoryService from "@/api/services/categoryService";
 
 export default function EditCategory() {
 	const navigate = useNavigate();
@@ -25,15 +26,8 @@ export default function EditCategory() {
 
 			try {
 				setFetchLoading(true);
-				const response = await fetch(`/api/categories/${id}`);
-				const result = await response.json();
-
-				if (result.status === 0) {
-					setCategory(result.data);
-				} else {
-					toast.error(result.message || "Failed to fetch category");
-					navigate("/categories");
-				}
+				const data = await categoryService.getCategoryById(id);
+				setCategory(data);
 			} catch (error) {
 				console.error("Error fetching category:", error);
 				toast.error("Failed to fetch category");
@@ -51,23 +45,13 @@ export default function EditCategory() {
 
 		try {
 			setIsLoading(true);
-			const response = await fetch(`/api/categories/${id}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
-
-			const result = await response.json();
-
-			if (result.status === 0) {
-				toast.success("Category updated successfully!");
-				navigate("/categories");
-			} else {
-				toast.error(result.message || "Failed to update category");
-			}
-		} catch (error) {
+			await categoryService.updateCategory(id, data as UpdateCategoryRequest);
+			toast.success("Category updated successfully!");
+			navigate("/categories");
+		} catch (error: any) {
 			console.error("Error updating category:", error);
-			toast.error("Failed to update category");
+			const errorMessage = error?.response?.data?.message || error?.message || "Failed to update category";
+			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
@@ -110,7 +94,7 @@ export default function EditCategory() {
 					</Button>
 					<div>
 						<h1 className="text-2xl font-bold text-text-primary">Edit Category</h1>
-						<p className="text-text-secondary mt-1">Update information for {category.name}</p>
+						<p className="text-text-secondary mt-1">Update information for {category.title}</p>
 					</div>
 				</div>
 			</div>

@@ -7,10 +7,33 @@ export interface UserToken {
 }
 
 export interface UserInfo {
-	id: string;
+	_id: string;
 	email: string;
-	username: string;
+	fullname: string;
 	password?: string;
+	image?: string;
+	phoneNo?: string;
+	role: {
+		_id: string;
+		name: string;
+		createdAt: string;
+		updatedAt: string;
+		__v?: number;
+	};
+	isActive: boolean;
+	isProfileCompleted: boolean;
+	notifications: boolean;
+	firebaseId: string;
+	accountType: string;
+	subscriptionType: string;
+	subscriptionDate?: string | null;
+	subscriptionExpiryDate?: string | null;
+	createdAt: string;
+	updatedAt: string;
+	__v?: number;
+	// Legacy properties for compatibility
+	id?: string;
+	username?: string;
 	avatar?: string;
 	roles?: Role[];
 	status?: BasicStatus;
@@ -82,7 +105,9 @@ export interface Menu extends CommonOptions, MenuMetaInfo {
 	type: PermissionType;
 }
 
-export type MenuMetaInfo = Partial<Pick<NavItemDataProps, "path" | "icon" | "caption" | "info" | "disabled" | "auth" | "hidden">> & {
+export type MenuMetaInfo = Partial<
+	Pick<NavItemDataProps, "path" | "icon" | "caption" | "info" | "disabled" | "auth" | "hidden">
+> & {
 	externalLink?: URL;
 	component?: string;
 };

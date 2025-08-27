@@ -1,31 +1,35 @@
 /**
- * Category interface for KampanYES admin panel
+ * Category interface for KampanYES admin panel (Backend format)
  * Categories are used to organize stores and collections
  */
 export interface Category {
-	id: string;
-	name: string;
+	_id: string;
+	title: string;
 	image: string;
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt: string;
+	updatedAt: string;
+	__v?: number;
+	// Legacy compatibility
+	id?: string;
+	name?: string;
 	// Statistics
 	storesCount?: number;
 }
 
 /**
- * Category creation/update request interface
+ * Category creation/update request interface (Backend format)
  */
 export interface CreateCategoryRequest {
-	name: string;
-	image: File | string;
+	title: string;
+	image: string; // Uploaded image filename
 }
 
 /**
- * Category update request interface
+ * Category update request interface (Backend format)
  */
 export interface UpdateCategoryRequest {
-	name?: string;
-	image?: File | string;
+	title?: string;
+	image?: string; // Uploaded image filename
 }
 
 /**

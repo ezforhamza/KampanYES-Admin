@@ -7,11 +7,14 @@ import { Button } from "@/ui/button";
 import { Upload } from "@/components/upload/upload";
 import { Icon } from "@/components/icon";
 import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/types/category";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { getImageUrl } from "@/utils/image";
+import { toast } from "sonner";
 
 // Schema for category form validation
 const categorySchema = z.object({
-	name: z.string().min(1, "Category name is required").max(50, "Name must be less than 50 characters"),
-	image: z.union([z.instanceof(File), z.string().url("Please provide a valid image URL")], {
+	title: z.string().min(1, "Category title is required").max(50, "Title must be less than 50 characters"),
+	image: z.union([z.instanceof(File), z.string()], {
 		errorMap: () => ({ message: "Category image is required" }),
 	}),
 });
@@ -27,16 +30,20 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, initialCategory }: CategoryFormProps) {
+	// Image upload hook
+	const { uploadImage, isUploading } = useImageUpload({
+		showToast: false, // We'll handle toast in the form submission
+	});
 	const getDefaultValues = (): CategoryFormData => {
 		if (editMode && initialCategory) {
 			return {
-				name: initialCategory.name,
+				title: initialCategory.title,
 				image: initialCategory.image,
 			};
 		}
 
 		return {
-			name: "",
+			title: "",
 			image: undefined as any,
 		};
 	};
@@ -46,17 +53,44 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 		defaultValues: getDefaultValues(),
 	});
 
-	const handleSubmit = (data: CategoryFormData) => {
+	const handleSubmit = async (data: CategoryFormData) => {
+		let finalData = { ...data };
+
+		// If there's a new image file to upload, upload it first
+		if (data.image && data.image instanceof File) {
+			const uploadToast = toast.loading("Uploading image...", {
+				description: "Please wait while we upload your category image.",
+			});
+
+			try {
+				const uploadResponse = await uploadImage(data.image);
+				// Use the uploaded filename in the form data
+				finalData.image = uploadResponse.image;
+
+				toast.success("Image uploaded successfully!", {
+					description: "Now updating category information...",
+					id: uploadToast,
+				});
+			} catch (error) {
+				console.error("Failed to upload image:", error);
+				toast.error("Failed to upload image", {
+					description: "Please try again or contact support if the problem persists.",
+					id: uploadToast,
+				});
+				return;
+			}
+		}
+
 		if (editMode) {
 			const submitData: UpdateCategoryRequest = {
-				name: data.name,
-				image: data.image,
+				title: finalData.title,
+				image: typeof finalData.image === "string" ? finalData.image : undefined,
 			};
 			onSubmit(submitData);
 		} else {
 			const submitData: CreateCategoryRequest = {
-				name: data.name,
-				image: data.image,
+				title: finalData.title,
+				image: typeof finalData.image === "string" ? finalData.image : "",
 			};
 			onSubmit(submitData);
 		}
@@ -95,8 +129,11 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 																uid: "1",
 																name: typeof field.value === "string" ? "category-image.jpg" : field.value.name,
 																status: "done" as const,
-																originFileObj: typeof field.value !== "string" ? field.value as any : undefined,
-																url: typeof field.value === "string" ? field.value : URL.createObjectURL(field.value),
+																originFileObj: typeof field.value !== "string" ? (field.value as any) : undefined,
+																url:
+																	typeof field.value === "string"
+																		? getImageUrl(field.value) || field.value
+																		: URL.createObjectURL(field.value),
 															},
 														]
 													: []
@@ -109,9 +146,7 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 										/>
 									</div>
 								</FormControl>
-								<FormDescription className="text-xs text-muted-foreground">
-									Upload PNG, JPG up to 5MB • Recommended: 400x300px
-								</FormDescription>
+								<FormDescription className="text-xs text-muted-foreground">Upload PNG, JPG up to 5MB</FormDescription>
 								<div className="min-h-[1.25rem]">
 									<FormMessage />
 								</div>
@@ -119,18 +154,18 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 						)}
 					/>
 
-					{/* Category Name */}
+					{/* Category Title */}
 					<FormField
 						control={form.control}
-						name="name"
+						name="title"
 						render={({ field }) => (
 							<FormItem className="space-y-2">
-								<FormLabel className="text-sm font-medium text-text-primary">Category Name *</FormLabel>
+								<FormLabel className="text-sm font-medium text-text-primary">Category Title *</FormLabel>
 								<FormControl>
 									<Input placeholder="e.g., Electronics, Fashion, Supermarkets" className="h-10" {...field} />
 								</FormControl>
 								<FormDescription className="text-xs text-muted-foreground">
-									Choose a clear, descriptive name for your category
+									Choose a clear, descriptive title for your category
 								</FormDescription>
 								<div className="min-h-[1.25rem]">
 									<FormMessage />
@@ -138,7 +173,6 @@ export function CategoryForm({ onSubmit, onCancel, isLoading, editMode = false, 
 							</FormItem>
 						)}
 					/>
-
 				</div>
 
 				{/* Footer */}

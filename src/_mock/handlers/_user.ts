@@ -5,15 +5,15 @@ import { faker } from "@faker-js/faker";
 import { http, HttpResponse } from "msw";
 import { DB_MENU, DB_PERMISSION, DB_ROLE, DB_ROLE_PERMISSION, DB_USER, DB_USER_ROLE } from "../assets_backup";
 
-const signIn = http.post(`/api${UserApi.SignIn}`, async ({ request }) => {
-	const { username, password } = (await request.json()) as Record<string, string>;
+const signIn = http.post(`${UserApi.SignIn}`, async ({ request }) => {
+	const { email, password } = (await request.json()) as Record<string, string>;
 
-	const user = DB_USER.find((item) => item.username === username);
+	const user = DB_USER.find((item) => item.email === email);
 
 	if (!user || user.password !== password) {
 		return HttpResponse.json({
 			status: 10001,
-			message: "Incorrect username or password.",
+			message: "Incorrect email or password.",
 		});
 	}
 	// delete password
@@ -32,12 +32,40 @@ const signIn = http.post(`/api${UserApi.SignIn}`, async ({ request }) => {
 	const menu = convertFlatToTree(DB_MENU);
 
 	return HttpResponse.json({
-		status: ResultStatus.SUCCESS,
-		message: "",
 		data: {
-			user: { ...userWithoutPassword, roles, permissions, menu },
+			user: {
+				_id: user.id,
+				email: user.email,
+				fullname: user.username,
+				image: user.avatar,
+				phoneNo: "+923000000000",
+				role: {
+					_id: roles[0]?.id || "admin-role-id",
+					name: roles[0]?.name || "admin",
+					createdAt: "2025-08-18T06:53:00.965Z",
+					updatedAt: "2025-08-18T06:53:00.965Z",
+					__v: 0,
+				},
+				isActive: user.status === 1,
+				isProfileCompleted: true,
+				notifications: true,
+				firebaseId: "",
+				accountType: "email",
+				subscriptionType: "free",
+				subscriptionDate: null,
+				subscriptionExpiryDate: null,
+				createdAt: "2025-08-19T06:33:10.761Z",
+				updatedAt: "2025-08-19T06:33:10.761Z",
+				__v: 0,
+				// Legacy compatibility
+				id: user.id,
+				username: user.username,
+				avatar: user.avatar,
+				roles,
+				permissions,
+				menu,
+			},
 			accessToken: faker.string.uuid(),
-			refreshToken: faker.string.uuid(),
 		},
 	});
 });

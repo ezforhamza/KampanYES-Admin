@@ -2,41 +2,49 @@ import { z } from "zod";
 import { BasicStatus } from "@/types/enum";
 
 /**
- * Opening hours validation
- * Accepts "Closed" or time range in format "HH:MM-HH:MM" (e.g., "09:00-18:00")
+ * Opening hours validation - now supports both string and object formats
  */
-const openingHoursValidation = z
-	.string()
-	.min(1, "Opening hours required")
-	.refine(
-		(val) => {
-			const trimmed = val.trim();
+const openingHoursValidation = z.union([
+	// String format: "09:00-18:00" or "Closed"
+	z
+		.string()
+		.min(1, "Opening hours required")
+		.refine(
+			(val) => {
+				const trimmed = val.trim();
 
-			// Check if it's "Closed" (case insensitive)
-			if (trimmed.toLowerCase() === "closed") {
-				return true;
-			}
+				// Check if it's "Closed" (case insensitive)
+				if (trimmed.toLowerCase() === "closed") {
+					return true;
+				}
 
-			// Check time range pattern: HH:MM-HH:MM
-			const timeRangePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]-([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-			if (!timeRangePattern.test(trimmed)) {
-				return false;
-			}
+				// Check time range pattern: HH:MM-HH:MM
+				const timeRangePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]-([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+				if (!timeRangePattern.test(trimmed)) {
+					return false;
+				}
 
-			// Validate that start time is before end time
-			const [startTime, endTime] = trimmed.split("-");
-			const [startHour, startMin] = startTime.split(":").map(Number);
-			const [endHour, endMin] = endTime.split(":").map(Number);
+				// Validate that start time is before end time
+				const [startTime, endTime] = trimmed.split("-");
+				const [startHour, startMin] = startTime.split(":").map(Number);
+				const [endHour, endMin] = endTime.split(":").map(Number);
 
-			const startMinutes = startHour * 60 + startMin;
-			const endMinutes = endHour * 60 + endMin;
+				const startMinutes = startHour * 60 + startMin;
+				const endMinutes = endHour * 60 + endMin;
 
-			return startMinutes < endMinutes;
-		},
-		{
-			message: "Enter 'Closed' or time range (e.g., '09:00-18:00'). Start time must be before end time.",
-		},
-	);
+				return startMinutes < endMinutes;
+			},
+			{
+				message: "Enter 'Closed' or time range (e.g., '09:00-18:00'). Start time must be before end time.",
+			},
+		),
+	// Object format: { isOpen: boolean, open: string, close: string }
+	z.object({
+		isOpen: z.boolean(),
+		open: z.string(),
+		close: z.string(),
+	}),
+]);
 
 /**
  * Store Creation Form Validation Schema
@@ -75,10 +83,8 @@ export const createStoreSchema = z.object({
 	saturdayHours: openingHoursValidation,
 	sundayHours: openingHoursValidation,
 
-	// Store Status
-	status: z.nativeEnum(BasicStatus, {
-		required_error: "Please select store status",
-	}),
+	// Store Status - support both enum and string format (optional for create mode)
+	status: z.union([z.nativeEnum(BasicStatus), z.enum(["active", "inactive"])]).optional(),
 });
 
 export type CreateStoreFormData = z.infer<typeof createStoreSchema>;

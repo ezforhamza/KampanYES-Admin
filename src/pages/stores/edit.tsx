@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { CreateStoreForm } from "./components/create-store-form";
 import type { CreateStoreFormData } from "./schemas/store-schema";
 import type { Store } from "@/types/store";
+import storeService, { type UpdateStoreRequest } from "@/api/services/storeService";
 
 export default function EditStore() {
 	const [isLoading, setIsLoading] = useState(false);
@@ -19,19 +20,8 @@ export default function EditStore() {
 		const loadStore = async () => {
 			setIsLoadingStore(true);
 			try {
-				// Use MSW API to fetch store
-				const response = await fetch(`/api/stores/${id}`);
-				const result = await response.json();
-
-				if (result.status === 0) {
-					setStore(result.data);
-				} else {
-					toast.error("Store not found", {
-						description: "The store you're trying to edit doesn't exist.",
-					});
-					push("/stores");
-					return;
-				}
+				const data = await storeService.getStoreById(id!);
+				setStore(data);
 			} catch (error) {
 				console.error("Failed to load store:", error);
 				toast.error("Failed to load store", {
@@ -53,75 +43,104 @@ export default function EditStore() {
 
 		setIsLoading(true);
 
-		const loadingToast = toast.loading("Updating store...", {
+		let loadingToast = toast.loading("Updating store...", {
 			description: `Saving changes to ${store.name}.`,
 		});
 
 		try {
-			// Handle logo - convert File to data URL if needed
-			let logoUrl = undefined;
-			if (data.logo) {
-				if (typeof data.logo === "string") {
-					logoUrl = data.logo;
-				} else if (data.logo instanceof File) {
-					// Convert File to data URL
-					logoUrl = URL.createObjectURL(data.logo);
-				}
-			}
-
-			// Create update payload
-			const updatePayload = {
+			// Create update payload according to backend format
+			const updatePayload: UpdateStoreRequest = {
 				name: data.name,
-				categoryId: data.categoryId, // Use categoryId, not category
-				logo: logoUrl,
+				category: data.categoryId,
 				description: data.description,
 				website: data.website,
+				status: data.status === 1 || data.status === "active" ? "active" : "inactive",
 				location: {
+					type: "Point",
+					coordinates: [
+						data.longitude || store.location.coordinates[0],
+						data.latitude || store.location.coordinates[1],
+					],
 					address: data.address,
-					city: (data as any).locationDetails?.city || store.location.city,
-					postcode: (data as any).locationDetails?.postcode || store.location.postcode,
-					country: (data as any).locationDetails?.country || store.location.country,
-					coordinates:
-						data.latitude && data.longitude
-							? {
-									lat: data.latitude,
-									lng: data.longitude,
-								}
-							: store.location.coordinates,
 				},
-				openingHours: {
-					monday: data.mondayHours,
-					tuesday: data.tuesdayHours,
-					wednesday: data.wednesdayHours,
-					thursday: data.thursdayHours,
-					friday: data.fridayHours,
-					saturday: data.saturdayHours,
-					sunday: data.sundayHours,
-				},
-				status: data.status,
 			};
 
-			// Use MSW API endpoint
-			const response = await fetch(`/api/stores/${store.id}`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(updatePayload),
-			});
-
-			const result = await response.json();
-
-			if (result.status !== 0) {
-				throw new Error(result.message || "Failed to update store");
+			// Add image if provided (uploaded image name from upload service)
+			if (data.logo && typeof data.logo === "string") {
+				updatePayload.image = data.logo;
 			}
 
-			toast.success("Store updated successfully!", {
-				description: `${data.name} information has been updated.`,
+			// Convert opening hours to availability format
+			const days = [
+				{ day: "monday", hours: data.mondayHours },
+				{ day: "tuesday", hours: data.tuesdayHours },
+				{ day: "wednesday", hours: data.wednesdayHours },
+				{ day: "thursday", hours: data.thursdayHours },
+				{ day: "friday", hours: data.fridayHours },
+				{ day: "saturday", hours: data.saturdayHours },
+				{ day: "sunday", hours: data.sundayHours },
+			];
+
+			updatePayload.availability = [];
+
+			days.forEach(({ day, hours }) => {
+				if (!hours) {
+					// Default to closed if no hours provided
+					updatePayload.availability!.push({
+						day,
+						status: "closed",
+					});
+				} else if (typeof hours === "object" && "isOpen" in hours) {
+					// Handle object format from form
+					if (hours.isOpen) {
+						updatePayload.availability!.push({
+							day,
+							openingTime: hours.open,
+							closingTime: hours.close,
+						});
+					} else {
+						updatePayload.availability!.push({
+							day,
+							status: "closed",
+						});
+					}
+				} else if (typeof hours === "string") {
+					// Handle string format
+					if (hours.toLowerCase() === "closed") {
+						updatePayload.availability!.push({
+							day,
+							status: "closed",
+						});
+					} else if (hours.includes("-")) {
+						// Parse "09:00-18:00" format
+						const [openingTime, closingTime] = hours.split("-");
+						updatePayload.availability!.push({
+							day,
+							openingTime: openingTime.trim(),
+							closingTime: closingTime.trim(),
+						});
+					} else {
+						updatePayload.availability!.push({
+							day,
+							status: "closed",
+						});
+					}
+				}
+			});
+
+			// Show final loading state
+			toast.loading("Finalizing store update...", {
+				description: "Almost done! Saving your changes.",
 				id: loadingToast,
 			});
 
-			// Navigate back to stores list or to store details
+			await storeService.updateStore(store._id, updatePayload);
+
+			toast.success("Store updated successfully!", {
+				description: `${data.name} has been updated and is now live.`,
+				id: loadingToast,
+			});
+
 			push("/stores");
 		} catch (error) {
 			console.error("Failed to update store:", error);
@@ -171,7 +190,7 @@ export default function EditStore() {
 
 				{/* Quick Actions */}
 				<div className="flex items-center gap-2">
-					<Button variant="outline" onClick={() => push(`/stores/${store.id}`)}>
+					<Button variant="outline" onClick={() => push(`/stores/${store._id}`)}>
 						<Icon icon="solar:eye-bold" size={16} className="mr-2" />
 						View Details
 					</Button>

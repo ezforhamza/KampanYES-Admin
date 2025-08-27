@@ -14,15 +14,35 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
 	(config) => {
-		config.headers.Authorization = "Bearer Token";
+		const { userToken } = userStore.getState();
+		if (userToken.accessToken) {
+			config.headers.Authorization = `Bearer ${userToken.accessToken}`;
+		}
 		return config;
 	},
 	(error) => Promise.reject(error),
 );
 
 axiosInstance.interceptors.response.use(
-	(res: AxiosResponse<Result<any>>) => {
+	(res: AxiosResponse<any>) => {
 		if (!res.data) throw new Error(t("sys.api.apiRequestFailed"));
+
+		// Handle upload response: { image: "filename.jpg" }
+		if (res.data.image) {
+			return res.data;
+		}
+
+		// Handle backend response format: { data: {...} }
+		if (res.data.data !== undefined) {
+			return res.data.data;
+		}
+
+		// Handle direct array responses (like store list)
+		if (Array.isArray(res.data)) {
+			return res.data;
+		}
+
+		// Handle legacy mock format: { status, data, message }
 		const { status, data, message } = res.data;
 		if (status === ResultStatus.SUCCESS) {
 			return data;

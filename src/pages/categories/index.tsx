@@ -7,6 +7,8 @@ import { Icon } from "@/components/icon";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import type { Category, CategoryFilters } from "@/types/category";
 import { toast } from "sonner";
+import categoryService from "@/api/services/categoryService";
+import { getImageWithFallback } from "@/utils/image";
 
 export default function Categories() {
 	const navigate = useNavigate();
@@ -20,18 +22,8 @@ export default function Categories() {
 	const fetchCategories = async () => {
 		try {
 			setLoading(true);
-			const queryParams = new URLSearchParams();
-			if (filters.search) queryParams.set("search", filters.search);
-
-			const response = await fetch(`/api/categories?${queryParams}`);
-			const data = await response.json();
-
-			if (data.status === 0) {
-				setFilteredCategories(data.data.list);
-				setFilteredCategories(data.data.list);
-			} else {
-				toast.error("Failed to fetch categories");
-			}
+			const data = await categoryService.getCategories(filters);
+			setFilteredCategories(data);
 		} catch (error) {
 			console.error("Error fetching categories:", error);
 			toast.error("Failed to fetch categories");
@@ -45,23 +37,17 @@ export default function Categories() {
 		if (!selectedCategory) return;
 
 		try {
-			const response = await fetch(`/api/categories/${selectedCategory.id}`, {
-				method: "DELETE",
-			});
-
-			const result = await response.json();
-
-			if (result.status === 0) {
-				toast.success("Category deleted successfully!");
-				setIsDeleteDialogOpen(false);
-				setSelectedCategory(null);
-				fetchCategories();
-			} else {
-				toast.error(result.message || "Failed to delete category");
-			}
-		} catch (error) {
+			await categoryService.deleteCategory(selectedCategory._id);
+			toast.success("Category deleted successfully!");
+			setIsDeleteDialogOpen(false);
+			setSelectedCategory(null);
+			fetchCategories();
+		} catch (error: any) {
 			console.error("Error deleting category:", error);
-			toast.error("Failed to delete category");
+			console.error("Server response:", error?.response?.data);
+
+			const errorMessage = error?.response?.data?.message || error?.message || "Failed to delete category";
+			toast.error(errorMessage);
 		}
 	};
 
@@ -102,13 +88,12 @@ export default function Categories() {
 		setFilters((prev) => ({ ...prev, search }));
 	};
 
-
 	const handleCreateClick = () => {
 		navigate("/categories/create");
 	};
 
 	const handleEditClick = (category: Category) => {
-		navigate(`/categories/${category.id}/edit`);
+		navigate(`/categories/${category._id}/edit`);
 	};
 
 	const openDeleteDialog = (category: Category) => {
@@ -159,39 +144,38 @@ export default function Categories() {
 				</div>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-					{filteredCategories.map((category) => (
-						<Card key={category.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-							<div className="aspect-video relative overflow-hidden">
-								<img
-									src={category.image}
-									alt={category.name}
-									className="w-full h-full object-cover"
-									onError={(e) => {
-										(e.target as HTMLImageElement).src =
-											"https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
-									}}
-								/>
-							</div>
-							<CardContent className="p-4">
-								<div className="space-y-2">
-									<h3 className="font-semibold text-lg truncate">{category.name}</h3>
-									<p className="text-sm text-text-secondary">
-										{category.storesCount || 0} store{(category.storesCount || 0) !== 1 ? "s" : ""}
-									</p>
-									<div className="flex items-center justify-between pt-2">
-										<div className="flex items-center gap-2">
-											<Button variant="ghost" size="sm" onClick={() => handleEditClick(category)}>
-												<Icon icon="solar:pen-bold" className="h-4 w-4" />
-											</Button>
-											<Button variant="ghost" size="sm" onClick={() => openDeleteDialog(category)}>
-												<Icon icon="solar:trash-bin-trash-bold" className="h-4 w-4" />
-											</Button>
+					{filteredCategories.map((category) => {
+						const imageUrls = getImageWithFallback(category.image, "category");
+						return (
+							<Card key={category._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+								<div className="aspect-video relative overflow-hidden">
+									<img
+										src={imageUrls.src}
+										alt={category.title}
+										className="w-full h-full object-cover"
+										onError={(e) => {
+											(e.target as HTMLImageElement).src = imageUrls.fallback;
+										}}
+									/>
+								</div>
+								<CardContent className="p-4">
+									<div className="space-y-2">
+										<h3 className="font-semibold text-lg truncate">{category.title}</h3>
+										<div className="flex items-center justify-between pt-2">
+											<div className="flex items-center gap-2">
+												<Button variant="ghost" size="sm" onClick={() => handleEditClick(category)}>
+													<Icon icon="solar:pen-bold" className="h-4 w-4" />
+												</Button>
+												<Button variant="ghost" size="sm" onClick={() => openDeleteDialog(category)}>
+													<Icon icon="solar:trash-bin-trash-bold" className="h-4 w-4" />
+												</Button>
+											</div>
 										</div>
 									</div>
-								</div>
-							</CardContent>
-						</Card>
-					))}
+								</CardContent>
+							</Card>
+						);
+					})}
 				</div>
 			)}
 
@@ -204,7 +188,7 @@ export default function Categories() {
 							Delete Category
 						</DialogTitle>
 						<DialogDescription className="pt-2">
-							Are you sure you want to delete <strong>{selectedCategory?.name}</strong>?
+							Are you sure you want to delete <strong>{selectedCategory?.title}</strong>?
 							{selectedCategory?.storesCount && selectedCategory.storesCount > 0 && (
 								<> This category has {selectedCategory.storesCount} store(s) assigned to it.</>
 							)}{" "}

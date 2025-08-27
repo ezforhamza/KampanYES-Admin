@@ -16,7 +16,58 @@ export enum StoreCategory {
 }
 
 /**
- * Opening Hours interface
+ * Store availability schedule (backend format)
+ */
+export interface DayAvailability {
+	day: string;
+	openingTime: string;
+	closingTime: string;
+	status: "open" | "closed";
+	_id: string;
+	id: string;
+}
+
+/**
+ * Store Location interface (backend GeoJSON format)
+ */
+export interface StoreLocation {
+	type: "Point";
+	coordinates: [number, number]; // [longitude, latitude]
+	address: string;
+}
+
+/**
+ * Category interface (populated from backend)
+ */
+export interface StoreCategory {
+	_id: string;
+	image: string;
+	title: string;
+	createdAt: string;
+	updatedAt: string;
+	__v?: number;
+}
+
+/**
+ * Folder/Collection interface (nested in store response)
+ */
+export interface StoreFolder {
+	_id: string;
+	store: string; // storeId
+	name: string;
+	category: string; // categoryId
+	status: string;
+	location: StoreLocation;
+	createdAt: string;
+	updatedAt: string;
+	__v?: number;
+	isFavorite: number;
+	id: string;
+}
+
+/**
+ * Opening Hours interface (legacy - for compatibility)
+ * @deprecated Use availability array instead
  */
 export interface OpeningHours {
 	monday: string;
@@ -29,63 +80,57 @@ export interface OpeningHours {
 }
 
 /**
- * Store Location interface
- */
-export interface StoreLocation {
-	address: string;
-	city: string;
-	postcode: string;
-	country: string;
-	coordinates?: {
-		lat: number;
-		lng: number;
-	};
-}
-
-/**
- * Main Store interface for KampanYES
+ * Main Store interface for KampanYES (Backend format)
  */
 export interface Store {
-	id: string;
+	_id: string;
+	id: string; // Also provided by backend
 	name: string;
-	categoryId: string; // Reference to Category entity
-	/** @deprecated Use categoryId instead */
-	category?: StoreCategory;
-	logo?: string;
-	location: StoreLocation;
-	openingHours: OpeningHours;
+	category: StoreCategory; // Populated category object
+	image: string; // Store logo/image filename
+	location: StoreLocation; // GeoJSON Point format
+	availability: DayAvailability[]; // Weekly schedule
 	website?: string;
 	description?: string;
-	status: BasicStatus;
-	createdAt: Date;
-	updatedAt: Date;
-	// Additional KampanYES specific fields
-	activeFlyersCount?: number;
+	status: string; // "active" | "inactive"
+	createdAt: string;
+	updatedAt: string;
+	__v?: number;
+	folders: StoreFolder[]; // Nested collections/folders
+	isFavorite: number; // 0 or 1
+	// Legacy compatibility fields
+	categoryId?: string; // For backward compatibility
+	logo?: string; // Map to image field
+	openingHours?: OpeningHours; // Convert from availability
+	activeFlyersCount?: number; // Calculate from folders
 }
 
 /**
- * Store creation/update request interface
+ * Store creation/update request interface (Backend format)
  */
 export interface CreateStoreRequest {
 	name: string;
-	categoryId: string; // Reference to Category entity
-	/** @deprecated Use categoryId instead */
-	category?: StoreCategory;
-	logo?: File | string;
-	location: StoreLocation;
-	openingHours: OpeningHours;
+	category: string; // Category ID
+	image?: string; // Uploaded image filename
+	location: {
+		type: "Point";
+		coordinates: [number, number]; // [lng, lat]
+		address: string;
+	};
+	availability: DayAvailability[];
 	website?: string;
 	description?: string;
+	status?: string;
 }
 
 /**
  * Store filters for search and filtering
  */
 export interface StoreFilters {
-	categoryId?: string; // Reference to Category entity
-	/** @deprecated Use categoryId instead */
-	category?: StoreCategory;
-	city?: string;
-	status?: BasicStatus;
+	category?: string; // Category ID
 	search?: string;
+	status?: string;
+	// Legacy compatibility
+	categoryId?: string;
+	city?: string;
 }

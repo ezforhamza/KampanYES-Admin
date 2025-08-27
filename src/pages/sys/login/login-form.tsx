@@ -26,8 +26,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
 	const form = useForm<SignInReq>({
 		defaultValues: {
-			username: DB_USER[0].username,
-			password: DB_USER[0].password,
+			email: "admin@admin.com",
+			password: "123456",
 		},
 	});
 
@@ -57,13 +57,13 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
 					<FormField
 						control={form.control}
-						name="username"
+						name="email"
 						rules={{ required: t("sys.login.accountPlaceholder") }}
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>{t("sys.login.userName")}</FormLabel>
+								<FormLabel>Email</FormLabel>
 								<FormControl>
-									<Input placeholder={DB_USER.map((user) => user.username).join("/")} {...field} />
+									<Input placeholder="admin@admin.com" type="email" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -78,7 +78,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 							<FormItem>
 								<FormLabel>{t("sys.login.password")}</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder={DB_USER[0].password} {...field} suppressHydrationWarning />
+									<Input type="password" placeholder="123456" {...field} suppressHydrationWarning />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -105,7 +105,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 						{loading && <Loader2 className="animate-spin mr-2" />}
 						{t("sys.login.loginButton")}
 					</Button>
-
 				</form>
 			</Form>
 		</div>

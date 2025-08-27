@@ -2,13 +2,12 @@ import { Badge } from "@/ui/badge";
 import { BasicStatus } from "@/types/enum";
 
 interface StatusBadgeProps {
-	status: BasicStatus;
+	status: BasicStatus | string;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-	return (
-		<Badge variant={status === BasicStatus.ENABLE ? "default" : "secondary"}>
-			{status === BasicStatus.ENABLE ? "Active" : "Inactive"}
-		</Badge>
-	);
+	// Handle both enum (legacy) and string (backend) status values
+	const isActive = status === BasicStatus.ENABLE || status === "active" || status === 1;
+
+	return <Badge variant={isActive ? "default" : "secondary"}>{isActive ? "Active" : "Inactive"}</Badge>;
 }

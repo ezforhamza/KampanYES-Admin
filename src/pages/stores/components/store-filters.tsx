@@ -4,9 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/ui/button";
 import { Icon } from "@/components/icon";
 import type { StoreFilters } from "@/types/store";
-import type { Category } from "@/types/category";
-import { BasicStatus } from "@/types/enum";
-import { useEffect, useState } from "react";
+import { useCategoriesSelect } from "@/hooks/useCategoriesSelect";
 
 interface StoreFiltersProps {
 	filters: StoreFilters;
@@ -15,28 +13,7 @@ interface StoreFiltersProps {
 }
 
 export function StoreFiltersComponent({ filters, onFiltersChange, onReset }: StoreFiltersProps) {
-	const [categories, setCategories] = useState<Category[]>([]);
-	const [categoriesLoading, setCategoriesLoading] = useState(true);
-
-	// Fetch categories
-	useEffect(() => {
-		const fetchCategories = async () => {
-			try {
-				setCategoriesLoading(true);
-				const response = await fetch("/api/categories");
-				const data = await response.json();
-				if (data.status === 0) {
-					setCategories(data.data.list);
-				}
-			} catch (error) {
-				console.error("Error fetching categories:", error);
-			} finally {
-				setCategoriesLoading(false);
-			}
-		};
-
-		fetchCategories();
-	}, []);
+	const { categories, isLoading: categoriesLoading } = useCategoriesSelect();
 
 	return (
 		<Card>
@@ -55,11 +32,11 @@ export function StoreFiltersComponent({ filters, onFiltersChange, onReset }: Sto
 
 					{/* Category Filter */}
 					<Select
-						value={filters.categoryId || "all"}
+						value={filters.category || "all"}
 						onValueChange={(value) =>
 							onFiltersChange({
 								...filters,
-								categoryId: value === "all" ? undefined : value,
+								category: value === "all" ? undefined : value,
 							})
 						}
 					>
@@ -72,8 +49,8 @@ export function StoreFiltersComponent({ filters, onFiltersChange, onReset }: Sto
 								<div className="p-2 text-center text-sm text-gray-500">Loading categories...</div>
 							) : (
 								categories.map((category) => (
-									<SelectItem key={category.id} value={category.id}>
-										{category.name}
+									<SelectItem key={category._id} value={category._id}>
+										{category.title}
 									</SelectItem>
 								))
 							)}
@@ -82,11 +59,11 @@ export function StoreFiltersComponent({ filters, onFiltersChange, onReset }: Sto
 
 					{/* Status Filter */}
 					<Select
-						value={filters.status !== undefined ? filters.status.toString() : "all"}
+						value={filters.status || "all"}
 						onValueChange={(value) =>
 							onFiltersChange({
 								...filters,
-								status: value === "all" ? undefined : (parseInt(value) as BasicStatus),
+								status: value === "all" ? undefined : value,
 							})
 						}
 					>
@@ -95,8 +72,8 @@ export function StoreFiltersComponent({ filters, onFiltersChange, onReset }: Sto
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">All statuses</SelectItem>
-							<SelectItem value={BasicStatus.ENABLE.toString()}>Active</SelectItem>
-							<SelectItem value={BasicStatus.DISABLE.toString()}>Inactive</SelectItem>
+							<SelectItem value="active">Active</SelectItem>
+							<SelectItem value="inactive">Inactive</SelectItem>
 						</SelectContent>
 					</Select>
 

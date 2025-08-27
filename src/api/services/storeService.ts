@@ -2,34 +2,56 @@ import apiClient from "../apiClient";
 import type { Store, StoreFilters } from "@/types/store";
 import type { CreateStoreFormData } from "@/pages/stores/schemas/store-schema";
 
-export enum StoreApi {
-	LIST = "/api/stores",
-	CREATE = "/api/stores",
-	UPDATE = "/api/stores/:id",
-	DELETE = "/api/stores/:id",
-	GET_BY_ID = "/api/stores/:id",
+export interface UpdateStoreRequest {
+	image?: string;
+	name?: string;
+	category?: string;
+	description?: string;
+	website?: string;
+	status?: string; // "active" | "inactive"
+	location?: {
+		type: "Point";
+		coordinates: [number, number]; // [lng, lat]
+		address: string;
+	};
+	availability?: Array<{
+		day: string;
+		openingTime?: string;
+		closingTime?: string;
+		status?: "open" | "closed";
+	}>;
 }
 
-// Get all stores with optional filters
-const getStores = (filters?: StoreFilters) => {
+export enum StoreApi {
+	LIST = "/store/",
+	CREATE = "/store/",
+	UPDATE = "/store/:id",
+	DELETE = "/store/:id",
+	GET_BY_ID = "/store/:id",
+}
+
+// Get all stores with pagination and optional filters
+const getStores = (page: number = 1, limit: number = 15, filters?: StoreFilters) => {
 	const params = new URLSearchParams();
 
+	// Add pagination params
+	params.append("page", page.toString());
+	params.append("limit", limit.toString());
+
+	// Add filter params
 	if (filters?.search) {
 		params.append("search", filters.search);
 	}
 	if (filters?.category) {
 		params.append("category", filters.category);
 	}
-	if (filters?.status !== undefined) {
-		params.append("status", filters.status.toString());
-	}
-	if (filters?.city) {
-		params.append("city", filters.city);
+	if (filters?.status) {
+		params.append("status", filters.status);
 	}
 
-	const url = `${StoreApi.LIST}${params.toString() ? `?${params.toString()}` : ""}`;
+	const url = `${StoreApi.LIST}?${params.toString()}`;
 
-	return apiClient.get<{ list: Store[]; total: number }>({ url });
+	return apiClient.get<Store[]>({ url });
 };
 
 // Create a new store
@@ -41,7 +63,7 @@ const createStore = (data: CreateStoreFormData) => {
 };
 
 // Update an existing store
-const updateStore = (id: string, data: Partial<Store>) => {
+const updateStore = (id: string, data: UpdateStoreRequest) => {
 	return apiClient.put<Store>({
 		url: StoreApi.UPDATE.replace(":id", id),
 		data,

@@ -63,8 +63,8 @@ export const useSignIn = () => {
 	const signIn = async (data: SignInReq) => {
 		try {
 			const res = await signInMutation.mutateAsync(data);
-			const { user, accessToken, refreshToken } = res;
-			setUserToken({ accessToken, refreshToken });
+			const { user, accessToken } = res;
+			setUserToken({ accessToken, refreshToken: undefined });
 			setUserInfo(user);
 		} catch (err) {
 			toast.error(err.message, {

@@ -10,100 +10,36 @@ import { Badge } from "@/ui/badge";
 import { StatusBadge } from "./components/store-badges";
 import { DeleteStoreDialog } from "./components/delete-store-dialog";
 import { StoreMapDisplay } from "./components/store-map-display";
-import { getSharedFlyers } from "@/_mock/shared-data";
+import { useStore } from "@/hooks/useStores";
+import { getImageWithFallback } from "@/utils/image";
 
 export default function StoreDetails() {
-	const [store, setStore] = useState<Store | null>(null);
-	const [collections, setCollections] = useState<Collection[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [isLoadingCollections, setIsLoadingCollections] = useState(true);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const { push, back } = useRouter();
 	const { id } = useParams();
 
+	// Use the useStore hook to fetch store data
+	const { data: store, isLoading, error } = useStore(id as string);
+
+	// Extract collections from the store's folders
+	const collections = store?.folders || [];
+
 	// Helper function to get collection thumbnail image
-	const getCollectionThumbnail = (collection: Collection): string => {
-		const sharedFlyers = getSharedFlyers();
-		
-		// If collection has a specific thumbnail flyer set
-		if (collection.thumbnailFlyerId) {
-			const thumbnailFlyer = sharedFlyers.find(f => f.id === collection.thumbnailFlyerId);
-			if (thumbnailFlyer?.image) {
-				return thumbnailFlyer.image;
-			}
-		}
-
-		// Default: get the first flyer's image from this collection
-		const firstFlyer = sharedFlyers.find(f => f.collectionId === collection.id);
-		if (firstFlyer?.image) {
-			return firstFlyer.image;
-		}
-
-		// Fallback: default placeholder image
+	const getCollectionThumbnail = (collection: any): string => {
+		// For now, use placeholder since we don't have flyer images in folders
 		return "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center";
 	};
 
-	// Load collections for this store
-	const loadCollections = async () => {
-		if (!id) return;
-		
-		setIsLoadingCollections(true);
-		try {
-			const params = new URLSearchParams();
-			params.set("storeId", id);
-			params.set("page", "1");
-			params.set("limit", "100");
-
-			const response = await fetch(`/api/collections?${params.toString()}`);
-			const result = await response.json();
-
-			if (result.status === 0) {
-				setCollections(result.data.list);
-			} else {
-				console.error("Failed to load collections");
-			}
-		} catch (error) {
-			console.error("Failed to load collections:", error);
-		} finally {
-			setIsLoadingCollections(false);
-		}
-	};
-
+	// Handle error state
 	useEffect(() => {
-		const loadStore = async () => {
-			setIsLoading(true);
-			try {
-				// Use MSW API to fetch store
-				const response = await fetch(`/api/stores/${id}`);
-				const result = await response.json();
-
-				if (result.status === 0) {
-					setStore(result.data);
-					// Load collections after store is loaded
-					loadCollections();
-				} else {
-					toast.error("Store not found", {
-						description: "The store you're looking for doesn't exist.",
-					});
-					push("/stores");
-					return;
-				}
-			} catch (error) {
-				console.error("Failed to load store:", error);
-				toast.error("Failed to load store", {
-					description: "Please try again or contact support if the problem persists.",
-				});
-				push("/stores");
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		if (id) {
-			loadStore();
+		if (error) {
+			toast.error("Failed to load store", {
+				description: "The store you're looking for doesn't exist or couldn't be loaded.",
+			});
+			push("/stores");
 		}
-	}, [id, push]);
+	}, [error, push]);
 
 	const handleDeleteStore = async () => {
 		if (!store) return;
@@ -169,8 +105,15 @@ export default function StoreDetails() {
 						<Icon icon="solar:arrow-left-bold" size={18} />
 					</Button>
 					<div className="flex items-center gap-4">
-						{store.logo ? (
-							<img src={store.logo} alt={store.name} className="w-12 h-12 rounded-lg object-cover border" />
+						{store.image ? (
+							<img
+								src={getImageWithFallback(store.image, "store").src}
+								alt={store.name}
+								className="w-12 h-12 rounded-lg object-cover border"
+								onError={(e) => {
+									(e.target as HTMLImageElement).src = getImageWithFallback(store.image, "store").fallback;
+								}}
+							/>
 						) : (
 							<div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center border">
 								<Icon icon="solar:shop-bold" size={20} className="text-gray-400" />
@@ -181,7 +124,7 @@ export default function StoreDetails() {
 								<h1 className="text-2xl font-bold text-text-primary">{store.name}</h1>
 							</div>
 							<div className="flex items-center gap-2">
-								<Badge variant="outline">{(store as any).categoryName || "Unknown"}</Badge>
+								<Badge variant="outline">{store.category?.title || "Unknown"}</Badge>
 								<StatusBadge status={store.status} />
 							</div>
 						</div>
@@ -190,7 +133,7 @@ export default function StoreDetails() {
 
 				{/* Action Buttons */}
 				<div className="flex items-center gap-2">
-					<Button variant="outline" onClick={() => push(`/stores/${store.id}/edit`)}>
+					<Button variant="outline" onClick={() => push(`/stores/${store._id}/edit`)}>
 						<Icon icon="solar:pen-bold" size={16} className="mr-2" />
 						Edit Store
 					</Button>
@@ -232,13 +175,6 @@ export default function StoreDetails() {
 									<Icon icon="solar:map-point-bold" size={20} className="text-muted-foreground mt-0.5 flex-shrink-0" />
 									<div className="text-sm text-muted-foreground">
 										<div className="font-medium text-foreground">{store.location.address}</div>
-										<div className="font-medium text-foreground">
-											{store.location.city}
-											{store.location.country ? `, ${store.location.country}` : ""}
-										</div>
-										{store.location.postcode && (
-											<div className="text-xs text-muted-foreground mt-1">Postal Code: {store.location.postcode}</div>
-										)}
 									</div>
 								</div>
 							</div>
@@ -267,8 +203,8 @@ export default function StoreDetails() {
 						{/* Store Location Map */}
 						{store.location.coordinates && (
 							<StoreMapDisplay
-								latitude={store.location.coordinates.lat}
-								longitude={store.location.coordinates.lng}
+								latitude={store.location.coordinates[1]}
+								longitude={store.location.coordinates[0]}
 								storeName={store.name}
 								address={store.location.address}
 								height={350}
@@ -289,22 +225,15 @@ export default function StoreDetails() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-2">
-								{[
-									{ day: "Monday", hours: store.openingHours.monday },
-									{ day: "Tuesday", hours: store.openingHours.tuesday },
-									{ day: "Wednesday", hours: store.openingHours.wednesday },
-									{ day: "Thursday", hours: store.openingHours.thursday },
-									{ day: "Friday", hours: store.openingHours.friday },
-									{ day: "Saturday", hours: store.openingHours.saturday },
-									{ day: "Sunday", hours: store.openingHours.sunday },
-								].map(({ day, hours }) => {
-									const isClosed = hours.toLowerCase() === "closed";
+								{store.availability?.map((availability) => {
+									const isClosed = availability.status === "closed";
+									const hours = isClosed ? "Closed" : `${availability.openingTime} - ${availability.closingTime}`;
 									return (
 										<div
-											key={day}
+											key={availability.day}
 											className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
 										>
-											<span className="text-sm text-text-secondary font-medium">{day}</span>
+											<span className="text-sm text-text-secondary font-medium capitalize">{availability.day}</span>
 											<span className={`text-sm font-medium ${isClosed ? "text-red-600" : "text-text-primary"}`}>
 												{hours}
 											</span>
@@ -326,10 +255,10 @@ export default function StoreDetails() {
 						<CardContent className="space-y-4">
 							<div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
 								<div className="flex items-center gap-3">
-									<Icon icon="solar:document-add-bold" size={24} className="text-blue-600 flex-shrink-0" />
+									<Icon icon="solar:folder-bold" size={24} className="text-blue-600 flex-shrink-0" />
 									<div>
-										<div className="text-2xl font-semibold text-blue-600">{store.activeFlyersCount || 0}</div>
-										<div className="text-sm text-blue-600/70">Active Flyers</div>
+										<div className="text-2xl font-semibold text-blue-600">{collections.length}</div>
+										<div className="text-sm text-blue-600/70">Collections</div>
 									</div>
 								</div>
 							</div>
@@ -359,7 +288,7 @@ export default function StoreDetails() {
 						<CardContent>
 							<div className="text-xs text-text-secondary space-y-2">
 								<div>
-									<span className="font-medium">Store ID:</span> {store.id}
+									<span className="font-medium">Store ID:</span> {store._id}
 								</div>
 								<div>
 									<span className="font-medium">Created:</span> {new Date(store.createdAt).toLocaleString()}
@@ -381,27 +310,19 @@ export default function StoreDetails() {
 							<Icon icon="solar:folder-bold" size={20} />
 							Collections ({collections.length})
 						</CardTitle>
-						<Button 
-							onClick={() => push(`/stores/${store.id}/collections/create`)}
-							size="sm"
-						>
+						<Button onClick={() => push(`/stores/${store._id}/collections/create`)} size="sm">
 							<Icon icon="solar:add-circle-bold" size={16} className="mr-2" />
 							Create Collection
 						</Button>
 					</div>
 				</CardHeader>
 				<CardContent>
-					{isLoadingCollections ? (
-						<div className="flex items-center justify-center py-8">
-							<Icon icon="solar:refresh-bold" className="mr-2 h-5 w-5 animate-spin text-primary" />
-							<span className="text-muted-foreground">Loading collections...</span>
-						</div>
-					) : collections.length === 0 ? (
+					{collections.length === 0 ? (
 						<div className="text-center py-8">
 							<Icon icon="solar:folder-bold-duotone" size={48} className="text-gray-400 mx-auto mb-4" />
 							<h3 className="text-lg font-medium text-gray-900 mb-2">No Collections Yet</h3>
 							<p className="text-gray-500 mb-4">Start organizing your flyers by creating your first collection.</p>
-							<Button onClick={() => push(`/stores/${store.id}/collections/create`)}>
+							<Button onClick={() => push(`/stores/${store._id}/collections/create`)}>
 								<Icon icon="solar:add-circle-bold" size={18} className="mr-2" />
 								Create First Collection
 							</Button>
@@ -410,9 +331,9 @@ export default function StoreDetails() {
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 							{collections.map((collection) => (
 								<div
-									key={collection.id}
+									key={collection._id}
 									className="group border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-									onClick={() => push(`/stores/${store.id}/collections/${collection.id}`)}
+									onClick={() => push(`/stores/${store._id}/collections/${collection._id}`)}
 								>
 									{/* Collection Thumbnail */}
 									<div className="aspect-video bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
@@ -421,22 +342,22 @@ export default function StoreDetails() {
 											alt={collection.name}
 											className="w-full h-full object-cover"
 										/>
-										
+
 										{/* Status Badge */}
 										<div className="absolute top-2 left-2">
-											<span className={`px-2 py-1 text-xs rounded-full font-medium ${
-												collection.status === 1 
-													? 'bg-green-500 text-white' 
-													: 'bg-red-500 text-white'
-											}`}>
-												{collection.status === 1 ? 'Active' : 'Inactive'}
+											<span
+												className={`px-2 py-1 text-xs rounded-full font-medium ${
+													collection.status === "active" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+												}`}
+											>
+												{collection.status === "active" ? "Active" : "Inactive"}
 											</span>
 										</div>
 
 										{/* Flyer Count Badge */}
 										<div className="absolute top-2 right-2">
 											<span className="bg-black/70 text-white px-2 py-1 text-xs rounded-full font-medium">
-												{collection.flyersCount} flyers
+												0 flyers
 											</span>
 										</div>
 									</div>
@@ -451,7 +372,7 @@ export default function StoreDetails() {
 													size="sm"
 													onClick={(e) => {
 														e.stopPropagation();
-														push(`/stores/${store.id}/collections/${collection.id}/edit`);
+														push(`/stores/${store._id}/collections/${collection._id}/edit`);
 													}}
 													className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
 												>
@@ -459,7 +380,7 @@ export default function StoreDetails() {
 												</Button>
 											</div>
 										</div>
-										
+
 										<div className="text-xs text-gray-400">
 											Updated: {new Date(collection.updatedAt).toLocaleDateString()}
 										</div>

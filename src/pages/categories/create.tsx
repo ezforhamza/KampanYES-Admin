@@ -6,6 +6,7 @@ import { Icon } from "@/components/icon";
 import { CategoryForm } from "./components/category-form";
 import type { CreateCategoryRequest } from "@/types/category";
 import { toast } from "sonner";
+import categoryService from "@/api/services/categoryService";
 
 export default function CreateCategory() {
 	const navigate = useNavigate();
@@ -14,23 +15,19 @@ export default function CreateCategory() {
 	const handleCreateCategory = async (data: CreateCategoryRequest) => {
 		try {
 			setIsLoading(true);
-			const response = await fetch("/api/categories", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
 
-			const result = await response.json();
+			console.log("Creating category with payload:", JSON.stringify(data, null, 2));
 
-			if (result.status === 0) {
-				toast.success("Category created successfully!");
-				navigate("/categories");
-			} else {
-				toast.error(result.message || "Failed to create category");
-			}
-		} catch (error) {
+			await categoryService.createCategory(data);
+
+			toast.success("Category created successfully!");
+			navigate("/categories");
+		} catch (error: any) {
 			console.error("Error creating category:", error);
-			toast.error("Failed to create category");
+			console.error("Server response:", error?.response?.data);
+
+			const errorMessage = error?.response?.data?.message || error?.message || "Failed to create category";
+			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
